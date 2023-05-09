@@ -65,4 +65,5 @@ npm run test:e2e
 ## API Documentation
 
 The API documentation is available through the Swagger UI, which can be accessed at `http://localhost:3000/api-doc?authToken=Docs-123456`. Replace `mysecretpassword` with the actual password you set in the `SWAGGER_PASSWORD` or `Docs-123456` environment variable.
+
 ```
