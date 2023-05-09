@@ -60,8 +60,28 @@ npm run test:e2e
 
 ### Database Migration Functionality is In Work Progress
 
-It will be set before production phase
+Migration feature is also added to make changes in production of further phase of production. to make us of migrations set `synchronize: false` in dataSource and check `package.json` migration commands.
+
+After making changes to data structure first run
+
+```
+npm run migration:generate -- db-config/migrations/NewMigration
+```
+
+This command will find changes in your database. Then to apply changes run
+
+```
+npm run migration:run
+```
+
+to revert changes back use following command
+
+```
+npm run migration:revert
+```
+
+Too see example in action check: [https://www.youtube.com/watch?v=5G81_VIjaO8&t=96s](https://www.youtube.com/watch?v=5G81_VIjaO8&t=96s).
 
 ## API Documentation
 
-The API documentation is available through the Swagger UI, which can be accessed at [http://localhost:3000/api-doc?authToken=Docs-123456](http://localhost:3000/api-doc?authToken=Docs-123456). Replace `Docs-123456` with the actual password you set in the `SWAGGER_PASSWORD` or `Docs-123456` environment variable.
+The API documentation is available through the Swagger UI, which can be accessed at [http://localhost:3000/api-doc?authToken=Docs-123456](http://localhost:3000/api-doc?authToken=Docs-123456). Replace `Docs-123456` with the actual password you set in the `SWAGGER_PASSWORD` or `Docs-123456` environment variable. To see some example check [https://www.youtube.com/watch?v=lZmsY0e2ojQ](https://www.youtube.com/watch?v=lZmsY0e2ojQ).

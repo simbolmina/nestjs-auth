@@ -8,7 +8,7 @@ export const developmentConfig: DataSourceOptions = {
   username: 'postgres',
   password: 'admin',
   database: 'development',
-  // synchronize: true,
+  synchronize: false,
   entities: [join(__dirname, '..', '**', '*.entity.{ts,js}')],
   migrations: ['dist/db-config/migrations/*.js'],
 };
