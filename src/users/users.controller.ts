@@ -9,9 +9,7 @@ import {
   Delete,
   NotFoundException,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
-import { CreateUserDto } from './dtos/create-user.dto';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { UserDto } from './dtos/user.dto';
@@ -19,7 +17,6 @@ import { Serialize } from '../interceptors/serialize.interceptor';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
-import { UserIdInterceptor } from './interceptors/user-id.interceptor';
 import { User } from './entities/user.entity';
 import {
   ApiCreatedResponse,
@@ -34,7 +31,8 @@ import {
   ApiOkResponse,
   ApiNotFoundResponse,
 } from '@nestjs/swagger';
-import { LoginUserDto } from './dtos/login-user.dto';
+import { LoginUserDto, UserLoginResponseDto } from './dtos/login-user.dto';
+import { SignupUserDto, UserSignupResponseDto } from './dtos/signup-user.dto';
 
 @ApiTags('users') // Groups endpoints under the 'users' tag in the Swagger UI
 @Serialize(UserDto)
@@ -51,7 +49,7 @@ export class UsersController {
   @ApiOperation({ summary: 'Get current user' }) // Describes the operation
   @ApiOkResponse({
     description: 'Returns the current user',
-    type: User,
+    type: UserDto,
   })
   @ApiUnauthorizedResponse({ description: 'Unauthorized' }) // Describes possible 401 response
   whoAmI(@CurrentUser() user: User) {
@@ -62,12 +60,12 @@ export class UsersController {
   @ApiOperation({ summary: 'User registration' })
   @ApiCreatedResponse({
     description: 'The user has been successfully created.',
-    type: User,
+    type: UserLoginResponseDto,
   })
   @ApiBadRequestResponse({
     description: 'Invalid data provided or email already in use',
   }) // Describes possible 400 response
-  async createUser(@Body() body: CreateUserDto) {
+  async createUser(@Body() body: SignupUserDto) {
     const user = await this.authService.signup(body.email, body.password);
     return user;
   }
@@ -76,7 +74,7 @@ export class UsersController {
   @ApiOperation({ summary: 'User login' })
   @ApiOkResponse({
     description: 'Returns the user and access token',
-    type: CreateUserDto,
+    type: UserSignupResponseDto,
   })
   @ApiBadRequestResponse({
     description: 'Wrong email or password',
@@ -85,11 +83,11 @@ export class UsersController {
     description: 'User not found',
   }) // Describes possible 404 response
   async signin(@Body() body: LoginUserDto) {
-    const { user, access_token } = await this.authService.signin(
+    const { user, token } = await this.authService.signin(
       body.email,
       body.password,
     );
-    return { user, access_token };
+    return { user, token };
   }
 
   @UseGuards(JwtAuthGuard)
@@ -130,12 +128,13 @@ export class UsersController {
     return this.usersService.find(email);
   }
 
+  // this is actually a PATCH request that sets user.active = false
   @Delete('/:id')
-  @ApiOperation({ summary: 'Delete user by ID' })
+  @ApiOperation({ summary: 'Deactivate user by ID' })
   @ApiParam({ name: 'id', description: 'User ID' })
-  @ApiResponse({ status: 200, description: 'User has been removed' })
-  removeUser(@Param('id') id: string) {
-    return this.usersService.remove(id);
+  @ApiResponse({ status: 200, description: 'User has been deactivated' })
+  async removeUser(@Param('id') id: string) {
+    return this.usersService.deactivate(id);
   }
 
   @Patch('/:id')

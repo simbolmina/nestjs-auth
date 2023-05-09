@@ -29,8 +29,8 @@ export class Product {
   @Column({ nullable: true })
   categoryId: number;
 
-  @Column({ nullable: true })
-  brandId: number;
+  // @Column({ nullable: true })
+  // brandId: number;
 
   @Column({ nullable: true, type: 'decimal' })
   price: number;

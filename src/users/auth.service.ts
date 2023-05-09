@@ -42,7 +42,7 @@ export class AuthService {
     const payload = { sub: user.id, email: user.email };
     return {
       user,
-      access_token: this.jwtService.sign(payload),
+      token: this.jwtService.sign(payload),
     };
   }
 
@@ -62,7 +62,7 @@ export class AuthService {
     const payload = { sub: user.id, email: user.email };
     return {
       user,
-      access_token: this.jwtService.sign(payload),
+      token: this.jwtService.sign(payload),
     };
   }
 }
@@ -96,7 +96,7 @@ export class AuthService {
 
 //     return {
 //       user,
-//       access_token: accessToken,
+//       token: accessToken,
 //     };
 //   }
 
@@ -114,7 +114,7 @@ export class AuthService {
 
 //     return {
 //       user,
-//       access_token: accessToken,
+//       token: accessToken,
 //     };
 //   }
 

@@ -19,8 +19,8 @@ async function bootstrap() {
       'support@example.com',
     )
     .addBearerAuth(
-      { type: 'http', scheme: 'Bearer', bearerFormat: 'JWT' },
-      'access_token',
+      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
+      'token',
     )
     .build();
 

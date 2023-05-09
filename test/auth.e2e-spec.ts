@@ -40,10 +40,10 @@ describe('Authentication System (e2e)', () => {
       .send({ email, password: 'password' })
       .expect(201)
       .then((res) => {
-        const { user, access_token } = res.body;
+        const { user, token } = res.body;
         console.log(res.body);
         expect(user).toBeDefined();
-        expect(access_token).toBeDefined();
+        expect(token).toBeDefined();
         expect(user.id).toBeDefined();
         expect(user.email).toEqual(email);
       });
@@ -59,11 +59,11 @@ describe('Authentication System (e2e)', () => {
       .send({ email, password: 'password' })
       .expect(201);
 
-    const { access_token } = (await res).body;
+    const { token } = (await res).body;
 
     const { body } = await request(app.getHttpServer())
       .get('/auth/whoami')
-      .set('Authorization', `Bearer ${access_token}`)
+      .set('Authorization', `Bearer ${token}`)
       .expect(200);
 
     expect(body.id).toBeDefined();

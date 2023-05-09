@@ -77,7 +77,7 @@ export class CreateUserDto {
   })
   @IsString()
   @IsOptional()
-  birthDate?: string;
+  birthDate?: Date;
 
   @ApiProperty({
     description: 'The gender of the user',

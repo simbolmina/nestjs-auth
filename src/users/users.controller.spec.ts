@@ -55,7 +55,7 @@ describe('UsersController', () => {
             email,
             password,
           } as User,
-          access_token: 'access_token',
+          token: 'token',
         });
       },
     };
@@ -106,12 +106,12 @@ describe('UsersController', () => {
     expect(users[0].email).toEqual('test@test.com');
   });
 
-  it('signin returns user and access_token', async () => {
-    const { user, access_token } = await controller.signin({
+  it('signin returns user and token', async () => {
+    const { user, token } = await controller.signin({
       email: 'test@test.com',
       password: 'test',
     });
     expect(user.id).toEqual('1');
-    expect(access_token).toBeDefined();
+    expect(token).toBeDefined();
   });
 });
