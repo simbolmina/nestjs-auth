@@ -42,7 +42,7 @@ npm run start:dev
 
 The application will be running at `http://localhost:3000/api/v3`.
 
-2. Access the Swagger UI at `http://localhost:3000/api-doc?authToken=mysecretpassword`. Replace `mysecretpassword` with the actual password you set in the `SWAGGER_PASSWORD` environment variable.
+2. Access the Swagger UI at `http://localhost:3000/api-doc?authToken=Docs-123456`. Replace `Docs-123456` with the actual password you set in the `SWAGGER_PASSWORD` environment variable.
 
 ### Running Tests
 
@@ -64,6 +64,5 @@ npm run test:e2e
 
 ## API Documentation
 
-The API documentation is available through the Swagger UI, which can be accessed at `http://localhost:3000/api-doc?authToken=User-123456`. Replace `mysecretpassword` with the actual password you set in the `SWAGGER_PASSWORD` or 'Docs-123456 environment variable.
-
+The API documentation is available through the Swagger UI, which can be accessed at `http://localhost:3000/api-doc?authToken=Docs-123456`. Replace `mysecretpassword` with the actual password you set in the `SWAGGER_PASSWORD` or `Docs-123456` environment variable.
 ```
