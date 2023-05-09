@@ -58,4 +58,10 @@ npm run test:watch
 npm run test:e2e
 ```
 
-### Database Migrations are In Working Progress
+### Database Migration Functionality is In Work Progress
+
+It will be set before production phase
+
+## API Documentation
+
+The API documentation is available through the Swagger UI, which can be accessed at [http://localhost:3000/api-doc?authToken=Docs-123456](http://localhost:3000/api-doc?authToken=Docs-123456). Replace `Docs-123456` with the actual password you set in the `SWAGGER_PASSWORD` or `Docs-123456` environment variable.
