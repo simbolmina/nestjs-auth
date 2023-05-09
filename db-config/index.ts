@@ -11,7 +11,7 @@ const configMap = {
 
 export const currentConfig = configMap[env];
 
-console.log('Current config:', currentConfig);
+// console.log('Current config:', currentConfig);
 
 const dataSource = new DataSource(currentConfig);
 

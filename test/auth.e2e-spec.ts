@@ -31,7 +31,9 @@ describe('Authentication System (e2e)', () => {
   });
 
   it('handles a signup request', () => {
-    const email = 'test1212@test.com';
+    const email = `test.email.${
+      Math.floor(Math.random() * 9000) + 1000
+    }@test.coom`;
     // return request(global.app.getHttpServer())
     return request(app.getHttpServer())
       .post('/auth/signup')
@@ -49,7 +51,9 @@ describe('Authentication System (e2e)', () => {
 
   //re-check this one when it works
   it('signup as a new user then get the currently logged in user', async () => {
-    const email = 'test2121@test.coom';
+    const email = `test.email.${
+      Math.floor(Math.random() * 9000) + 1000
+    }@test.coom`;
     const res = request(app.getHttpServer())
       .post('/auth/signup')
       .send({ email, password: 'password' })
