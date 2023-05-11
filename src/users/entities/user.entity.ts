@@ -177,7 +177,7 @@ export class User {
     required: false,
   })
   @Column({ nullable: true, default: false })
-  isVip: boolean;
+  isVIP: boolean;
 
   @ApiProperty({
     description: 'The date when the user changed their password',

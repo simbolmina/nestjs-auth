@@ -12,6 +12,7 @@ Before you begin, you will need to have the following installed on your machine:
 2. [npm](https://www.npmjs.com/) (v6.x or higher)
 3. [PostgreSQL](https://www.postgresql.org/download/) (v10.x or higher)
 4. (Optional) [PgAdmin](https://www.pgadmin.org/download/) - a GUI tool for managing PostgreSQL databases
+5. Create two databases with PgAdmin as `development` and `test`
 
 ### Installation
 
@@ -38,9 +39,9 @@ npm install
 npm run start:dev
 ```
 
-The application will be running at `http://localhost:3000/api/v3`.
+The application will be running at `http://localhost:5000/api/v3`.
 
-2. Access the Swagger UI at `http://localhost:3000/api-doc?authToken=Docs-123456`. Replace `Docs-123456` with the actual password you set in the `SWAGGER_PASSWORD` environment variable.
+2. Access the Swagger UI at `http://localhost:5000/api-doc
 
 ### Running Tests
 

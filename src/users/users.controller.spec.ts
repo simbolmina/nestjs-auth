@@ -38,11 +38,12 @@ describe('UsersController', () => {
           password: 'test',
         } as User);
       },
-      update: (id: string) => {
+      update: (id: string, attrs: Partial<User>) => {
         return Promise.resolve({
           id,
           email: 'test@test.com',
           password: 'test',
+          ...attrs,
         } as User);
       },
     };
@@ -50,7 +51,7 @@ describe('UsersController', () => {
       // signup: () => {},
       signin: (email: string, password: string) => {
         return Promise.resolve({
-          user: {
+          data: {
             id: '1',
             email,
             password,
@@ -107,11 +108,11 @@ describe('UsersController', () => {
   });
 
   it('signin returns user and token', async () => {
-    const { user, token } = await controller.signin({
+    const { data, token } = await controller.signin({
       email: 'test@test.com',
       password: 'test',
     });
-    expect(user.id).toEqual('1');
+    expect(data.id).toEqual('1');
     expect(token).toBeDefined();
   });
 });

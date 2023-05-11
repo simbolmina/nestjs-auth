@@ -17,15 +17,6 @@ export class UpdateUserDto {
   email: string;
 
   @ApiProperty({
-    description: 'The password of the user',
-    example: 'password',
-    minLength: 8,
-  })
-  @IsString()
-  @MinLength(8, { message: 'Password should be at least 8 characters long' })
-  password: string;
-
-  @ApiProperty({
     description: 'The display name of the user',
     example: 'JohnDoe',
     required: false,

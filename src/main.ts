@@ -2,11 +2,13 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { SwaggerAuthMiddleware } from './middlewares/swagger-auth.middleware';
+import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix('api/v3');
   app.enableCors();
+  app.use(cookieParser());
 
   const config = new DocumentBuilder()
     .setTitle('Pazareo API')
@@ -29,6 +31,6 @@ async function bootstrap() {
 
   app.use('/api-doc', SwaggerAuthMiddleware);
 
-  await app.listen(3000);
+  await app.listen(5000);
 }
 bootstrap();

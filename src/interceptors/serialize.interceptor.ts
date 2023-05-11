@@ -37,6 +37,13 @@ export class SerializeInterceptor implements NestInterceptor {
         }
         //Run something before the response is sent out
         //console.log('I am running before response is sent out', data);
+        // Add this block to handle objects with a 'data' property
+        if (data && data.data) {
+          data.data = plainToInstance(this.dto, data.data, {
+            excludeExtraneousValues: true,
+          });
+          return data;
+        }
 
         return plainToInstance(this.dto, data, {
           //ensure that the returned object is an instance of UserDto with Expose decorator

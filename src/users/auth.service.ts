@@ -41,7 +41,7 @@ export class AuthService {
 
     const payload = { sub: user.id, email: user.email };
     return {
-      user,
+      data: user,
       token: this.jwtService.sign(payload),
     };
   }
@@ -61,65 +61,8 @@ export class AuthService {
 
     const payload = { sub: user.id, email: user.email };
     return {
-      user,
+      data: user,
       token: this.jwtService.sign(payload),
     };
   }
 }
-
-// // auth.service.ts
-// import {
-//   BadRequestException,
-//   Injectable,
-//   NotFoundException,
-// } from '@nestjs/common';
-// import { UsersService } from './users.service';
-// import { JwtService } from '@nestjs/jwt';
-// import * as bcrypt from 'bcrypt';
-
-// @Injectable()
-// export class AuthService {
-//   constructor(
-//     private usersService: UsersService,
-//     private jwtService: JwtService,
-//   ) {}
-
-//   async signup(email: string, password: string) {
-//     const users = await this.usersService.find(email);
-//     if (users.length) throw new BadRequestException('email in use');
-
-//     const hashedPassword = await bcrypt.hash(password, 10);
-
-//     const user = await this.usersService.create(email, hashedPassword);
-
-//     const accessToken = this.generateAccessToken(user.id, user.email);
-
-//     return {
-//       user,
-//       token: accessToken,
-//     };
-//   }
-
-//   async signin(email: string, password: string) {
-//     const [user] = await this.usersService.find(email);
-//     if (!user) throw new NotFoundException('User not found');
-
-//     const isPasswordValid = await bcrypt.compare(password, user.password);
-
-//     if (!isPasswordValid) {
-//       throw new BadRequestException('wrong email or password');
-//     }
-
-//     const accessToken = this.generateAccessToken(user.id, user.email);
-
-//     return {
-//       user,
-//       token: accessToken,
-//     };
-//   }
-
-//   private generateAccessToken(userId: string, userEmail: string): string {
-//     const payload = { sub: userId, email: userEmail };
-//     return this.jwtService.sign(payload);
-//   }
-// }

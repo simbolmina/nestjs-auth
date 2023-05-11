@@ -39,7 +39,7 @@ describe('AuthService', () => {
     const module = await Test.createTestingModule({
       imports: [
         JwtModule.register({
-          secret: 'test_secret_key', // Provide the secret for JWT signing
+          secret: process.env.TOKEN_SECRET_KEY, // Provide the secret for JWT signing
           signOptions: { expiresIn: '90d' }, // Set JWT expiration time
         }),
       ],
@@ -66,10 +66,10 @@ describe('AuthService', () => {
     const user = await service.signup('user4@test.com', '123456');
 
     // Check that the password has been hashed and is not the original one
-    expect(user.user.password).not.toEqual('123456');
+    expect(user.data.password).not.toEqual('123456');
 
     // Split the password into salt and hash
-    const [salt, hash] = user.user.password.split('.');
+    const [salt, hash] = user.data.password.split('.');
 
     // Check that the salt and hash are defined
     expect(salt).toBeDefined();

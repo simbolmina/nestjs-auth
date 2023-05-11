@@ -9,6 +9,7 @@ import {
   Delete,
   NotFoundException,
   UseGuards,
+  Res,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dtos/update-user.dto';
@@ -33,6 +34,7 @@ import {
 } from '@nestjs/swagger';
 import { LoginUserDto, UserLoginResponseDto } from './dtos/login-user.dto';
 import { SignupUserDto, UserSignupResponseDto } from './dtos/signup-user.dto';
+import { Response } from 'express';
 
 @ApiTags('users') // Groups endpoints under the 'users' tag in the Swagger UI
 @Serialize(UserDto)
@@ -64,10 +66,22 @@ export class UsersController {
   })
   @ApiBadRequestResponse({
     description: 'Invalid data provided or email already in use',
-  }) // Describes possible 400 response
-  async createUser(@Body() body: SignupUserDto) {
-    const user = await this.authService.signup(body.email, body.password);
-    return user;
+  })
+  async createUser(
+    @Body() body: SignupUserDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { data, token } = await this.authService.signup(
+      body.email,
+      body.password,
+    );
+
+    res.cookie('auth_token', token, {
+      httpOnly: true,
+      maxAge: 72 * 60 * 60 * 1000,
+    });
+
+    return { data, token };
   }
 
   @Post('signin')
@@ -78,16 +92,25 @@ export class UsersController {
   })
   @ApiBadRequestResponse({
     description: 'Wrong email or password',
-  }) // Describes possible 400 response
+  })
   @ApiNotFoundResponse({
     description: 'User not found',
-  }) // Describes possible 404 response
-  async signin(@Body() body: LoginUserDto) {
-    const { user, token } = await this.authService.signin(
+  })
+  async signin(
+    @Body() body: LoginUserDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { data, token } = await this.authService.signin(
       body.email,
       body.password,
     );
-    return { user, token };
+    // Set the JWT token as a cookie in the response
+    res.cookie('auth_token', token, {
+      httpOnly: true,
+      maxAge: 72 * 60 * 60 * 1000,
+    });
+
+    return { data, token };
   }
 
   @UseGuards(JwtAuthGuard)

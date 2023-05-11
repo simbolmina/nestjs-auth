@@ -1,5 +1,3 @@
-const slugify = require('slugify');
-// import { User } from 'src/users/entities/user.entity';
 import { User } from '../../users/entities/user.entity';
 import {
   Entity,
@@ -10,6 +8,7 @@ import {
   BeforeInsert,
   BeforeUpdate,
 } from 'typeorm';
+const slugify = require('slugify');
 
 @Entity('products')
 @Index('products_slug_key', ['slug'], { unique: true })
@@ -29,8 +28,8 @@ export class Product {
   @Column({ nullable: true })
   categoryId: number;
 
-  // @Column({ nullable: true })
-  // brandId: number;
+  @Column({ nullable: true })
+  brandId: number;
 
   @Column({ nullable: true, type: 'decimal' })
   price: number;

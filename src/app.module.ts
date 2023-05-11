@@ -9,13 +9,14 @@ import { ProductsModule } from './products/products.module';
 // import { currentConfig } from '../db-config';
 
 @Module({
-  imports: [DatabaseModule, UsersModule, ValidationModule, ProductsModule],
+  imports: [
+    ConfigModule.forRoot(),
+    DatabaseModule,
+    UsersModule,
+    ValidationModule,
+    ProductsModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {}
-
-// ConfigModule.forRoot({
-//   isGlobal: true,
-//   envFilePath: `.env.${process.env.NODE_ENV}`,
-// }),

@@ -2,18 +2,34 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { UsersService } from './users.service';
+import { Request } from 'express';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(private usersService: UsersService) {
-    // console.log(process.env.TOKEN_SECRET_KEY);
-    const secretOrKey = 'secret_key_for_pazareo';
-    // const secretOrKey = process.env.TOKEN_SECRET_KEY;
+  constructor(
+    private usersService: UsersService,
+    private readonly configService: ConfigService,
+  ) {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        JwtStrategy.extractJWT,
+        ExtractJwt.fromAuthHeaderAsBearerToken(),
+      ]),
       ignoreExpiration: false,
-      secretOrKey,
+      secretOrKey: configService.get('TOKEN_SECRET_KEY'),
     });
+  }
+
+  private static extractJWT(req: Request): string | null {
+    if (
+      req.cookies &&
+      'token' in req.cookies &&
+      req.cookies.user_token.length > 0
+    ) {
+      return req.cookies.token;
+    }
+    return null;
   }
 
   async validate(payload: any) {

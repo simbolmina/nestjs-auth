@@ -99,7 +99,7 @@ export class UserDto {
     example: false,
   })
   @Expose()
-  isVip: boolean;
+  isVIP: boolean;
 
   @ApiProperty({
     description: 'The date when the user was created',
