@@ -1,3 +1,5 @@
+import { Brand } from 'src/brands/entities/brand.entity';
+import { Category } from '../../categories/entities/category.entity';
 import { User } from '../../users/entities/user.entity';
 import {
   Entity,
@@ -7,6 +9,8 @@ import {
   ManyToOne,
   BeforeInsert,
   BeforeUpdate,
+  OneToOne,
+  JoinColumn,
 } from 'typeorm';
 const slugify = require('slugify');
 
@@ -24,12 +28,6 @@ export class Product {
 
   @Column({ nullable: true, type: 'text' })
   description: string;
-
-  @Column({ nullable: true })
-  categoryId: number;
-
-  @Column({ nullable: true })
-  brandId: number;
 
   @Column({ nullable: true, type: 'decimal' })
   price: number;
@@ -70,6 +68,12 @@ export class Product {
 
   @ManyToOne(() => User, (user) => user.products)
   seller: User;
+
+  @ManyToOne(() => Category, (category) => category.products)
+  category: Category;
+
+  @ManyToOne(() => Brand, (brand) => brand.products)
+  brand: Brand;
 
   @BeforeInsert()
   @BeforeUpdate()

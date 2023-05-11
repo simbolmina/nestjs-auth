@@ -13,6 +13,9 @@ import {
   DeleteDateColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
+import { Address } from '../../addresses/entities/address.entity';
+import { Cart } from '../../cart/entities/cart.entity';
+import { Wishlist } from '../../wishlists/entities/wishlist.entity';
 
 @Entity('users')
 @Index(['googleId', 'email', 'id'], { unique: true })
@@ -211,10 +214,6 @@ export class User {
   @Column({ nullable: true })
   passwordResetVerified: boolean;
 
-  // Keep this as it is (no Swagger decorator needed for relations)
-  @OneToMany(() => Product, (product) => product.seller)
-  products: Product[];
-
   @ApiProperty({ description: 'The date when the user was created' })
   @CreateDateColumn()
   createdAt: Date;
@@ -229,6 +228,25 @@ export class User {
   })
   @DeleteDateColumn()
   deletedAt: Date;
+
+  // Keep this as it is (no Swagger decorator needed for relations)
+  @OneToMany(() => Product, (product) => product.seller)
+  products: Product[];
+
+  @OneToMany(() => Address, (address) => address.user)
+  addresses: Address[];
+
+  @OneToMany(() => Cart, (cart) => cart.user)
+  cart: Cart[];
+
+  @OneToMany(() => Wishlist, (wishlist) => wishlist.user)
+  wishlists: Wishlist[];
+
+  // @OneToMany((type) => Wishlist, (wishlist) => wishlist.user, {
+  //   cascade: true,
+  //   eager: true,
+  // })
+  // wishlists: Wishlist[];
 
   @AfterInsert()
   logInsert() {
