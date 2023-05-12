@@ -21,6 +21,8 @@ export class Wishlist {
   user: User;
 
   @ManyToMany(() => Product, { cascade: true })
-  @JoinTable()
+  @JoinTable({
+    name: 'wishlistProducts',
+  })
   products: Product[];
 }

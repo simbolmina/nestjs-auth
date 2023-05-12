@@ -6,6 +6,7 @@ import { User } from './entities/user.entity';
 import { SerializeInterceptor } from '../interceptors/serialize.interceptor';
 import { NotFoundException } from '@nestjs/common';
 import { UserDto } from './dtos/user.dto';
+import { Response } from 'express';
 
 describe('UsersController', () => {
   let controller: UsersController;
@@ -107,12 +108,33 @@ describe('UsersController', () => {
     expect(users[0].email).toEqual('test@test.com');
   });
 
+  // it('signin returns user and token', async () => {
+  //   const { data, token } = await controller.signin({
+  //     email: 'test@test.com',
+  //     password: 'test',
+  //   });
+  //   expect(data.id).toEqual('1');
+  //   expect(token).toBeDefined();
+  // });
   it('signin returns user and token', async () => {
-    const { data, token } = await controller.signin({
-      email: 'test@test.com',
-      password: 'test',
-    });
+    const mockResponse = {
+      cookie: jest.fn(),
+      status: function () {
+        return this;
+      },
+      json: function () {},
+    } as unknown as Response;
+
+    const { data, token } = await controller.signin(
+      { email: 'test@test.com', password: 'test' },
+      mockResponse,
+    );
+
     expect(data.id).toEqual('1');
     expect(token).toBeDefined();
+    expect(mockResponse.cookie).toHaveBeenCalledWith('auth_token', token, {
+      httpOnly: true,
+      maxAge: 72 * 60 * 60 * 1000,
+    });
   });
 });

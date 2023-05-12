@@ -11,11 +11,13 @@ import {
   UpdateDateColumn,
   Index,
   DeleteDateColumn,
+  OneToOne,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { Address } from '../../addresses/entities/address.entity';
 import { Cart } from '../../cart/entities/cart.entity';
 import { Wishlist } from '../../wishlists/entities/wishlist.entity';
+import { Review } from 'src/reviews/entities/review.entity';
 
 @Entity('users')
 @Index(['googleId', 'email', 'id'], { unique: true })
@@ -33,6 +35,26 @@ export class User {
   })
   @Column({ unique: true })
   email: string;
+
+  //relations start here
+  // Keep this as it is (no Swagger decorator needed for relations)
+  @OneToMany(() => Product, (product) => product.seller)
+  products: Product[];
+
+  @OneToMany(() => Address, (address) => address.user)
+  addresses: Address[];
+
+  @OneToOne(() => Cart, (cart) => cart.user)
+  cart: Cart[];
+
+  @OneToMany((type) => Wishlist, (wishlist) => wishlist.user, {
+    cascade: true,
+  })
+  wishlists: Wishlist[];
+
+  @OneToMany(() => Review, (review) => review.user)
+  reviews: Review[];
+  //relations end here
 
   @ApiProperty({
     description: 'The display name of the user',
@@ -228,25 +250,6 @@ export class User {
   })
   @DeleteDateColumn()
   deletedAt: Date;
-
-  // Keep this as it is (no Swagger decorator needed for relations)
-  @OneToMany(() => Product, (product) => product.seller)
-  products: Product[];
-
-  @OneToMany(() => Address, (address) => address.user)
-  addresses: Address[];
-
-  @OneToMany(() => Cart, (cart) => cart.user)
-  cart: Cart[];
-
-  @OneToMany(() => Wishlist, (wishlist) => wishlist.user)
-  wishlists: Wishlist[];
-
-  // @OneToMany((type) => Wishlist, (wishlist) => wishlist.user, {
-  //   cascade: true,
-  //   eager: true,
-  // })
-  // wishlists: Wishlist[];
 
   @AfterInsert()
   logInsert() {

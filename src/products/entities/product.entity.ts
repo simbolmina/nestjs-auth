@@ -11,7 +11,11 @@ import {
   BeforeUpdate,
   OneToOne,
   JoinColumn,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
+import { Attachment } from '../../attachments/entities/attachment.entity';
+import { Variant } from '../../variants/entities/variant.entity';
 const slugify = require('slugify');
 
 @Entity('products')
@@ -22,6 +26,29 @@ export class Product {
 
   @Column({ nullable: true })
   name: string;
+
+  //relations start
+  @ManyToOne(() => User, (user) => user.products)
+  seller: User;
+
+  @ManyToOne(() => Category, (category) => category.products)
+  category: Category;
+
+  @ManyToOne(() => Brand, (brand) => brand.products)
+  brand: Brand;
+
+  @ManyToMany(() => Attachment, (attachment) => attachment.products)
+  @JoinTable({
+    name: 'productAttachments',
+  })
+  attachments: Attachment[];
+
+  @ManyToMany(() => Variant)
+  @JoinTable({
+    name: 'productVariants',
+  })
+  variants: Variant[];
+  //relations end
 
   @Column({ unique: true, nullable: false })
   slug: string;
@@ -65,15 +92,6 @@ export class Product {
 
   @Column({ nullable: true, default: false })
   isOnSale: boolean;
-
-  @ManyToOne(() => User, (user) => user.products)
-  seller: User;
-
-  @ManyToOne(() => Category, (category) => category.products)
-  category: Category;
-
-  @ManyToOne(() => Brand, (brand) => brand.products)
-  brand: Brand;
 
   @BeforeInsert()
   @BeforeUpdate()

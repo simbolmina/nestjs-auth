@@ -1,4 +1,5 @@
-import { User } from 'src/users/entities/user.entity';
+import { Product } from '../../products/entities/product.entity';
+import { User } from '../../users/entities/user.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -11,11 +12,17 @@ import {
   JoinTable,
 } from 'typeorm';
 
-@Entity('addresses')
+@Entity('cart')
 export class Cart {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => User, (user) => user.cart)
+  @OneToOne(() => User, (user) => user.cart)
   user: User;
+
+  @ManyToMany(() => Product)
+  @JoinTable({
+    name: 'cartProducts',
+  })
+  products: Product[];
 }

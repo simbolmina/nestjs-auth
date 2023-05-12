@@ -4,8 +4,11 @@ import {
   Column,
   ManyToOne,
   OneToMany,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import { Product } from '../../products/entities/product.entity';
+import { Attachment } from '../../attachments/entities/attachment.entity';
 
 @Entity('categories')
 export class Category {
@@ -15,14 +18,20 @@ export class Category {
   @Column()
   name: string;
 
-  @ManyToOne(() => Category, (category) => category.sub_categories, {
+  @ManyToOne(() => Category, (category) => category.subCategories, {
     onDelete: 'CASCADE',
   })
   parent: Category;
 
   @OneToMany(() => Category, (category) => category.parent)
-  sub_categories: Category[];
+  subCategories: Category[];
 
   @OneToMany(() => Product, (product) => product.category)
   products: Product[];
+
+  @ManyToMany(() => Attachment, { cascade: true })
+  @JoinTable({
+    name: 'categoryAttachments',
+  })
+  attachments: Attachment[];
 }
