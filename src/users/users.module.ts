@@ -7,7 +7,9 @@ import { User } from './entities/user.entity';
 import { AuthService } from './auth.service';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import { JwtStrategy } from './jwt.strategy';
+import { JwtStrategy } from './strategies/jwt.strategy';
+import { GoogleStrategy } from './strategies/google.strategy';
+import { AuthController } from './auth.controller';
 
 @Module({
   imports: [
@@ -23,7 +25,13 @@ import { JwtStrategy } from './jwt.strategy';
       inject: [ConfigService],
     }),
   ],
-  controllers: [UsersController],
-  providers: [UsersService, AuthService, JwtStrategy, ConfigService],
+  controllers: [UsersController, AuthController],
+  providers: [
+    UsersService,
+    AuthService,
+    JwtStrategy,
+    GoogleStrategy,
+    ConfigService,
+  ],
 })
 export class UsersModule {}

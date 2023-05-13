@@ -21,7 +21,9 @@ import { ChangeProductStatusDto } from './dto/change-product-status.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { AdminGuard } from '../guards/admin.guard';
 import { GetFeaturedProductdDto } from './dto/get-product.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('products')
 @Controller('products')
 export class ProductsController {
   constructor(private productsService: ProductsService) {}

@@ -18,7 +18,9 @@ const dataSource = new DataSource(currentConfig);
 dataSource
   .initialize()
   .then(() => {
-    console.log(`Data Source has been initialized in ${env} environment!`);
+    console.log(
+      `Data Source has been initialized in --${env.toUpperCase()}-- environment!`,
+    );
   })
   .catch((err) => {
     console.error('Error during Data Source initialization', err);

@@ -157,6 +157,19 @@ export class User {
   })
   gender: string;
 
+  @ApiProperty({
+    description: 'Provider of the user account source',
+    example: 'google',
+    enum: ['google', 'apple', 'none'],
+  })
+  @Column({
+    nullable: false,
+    type: 'enum',
+    enum: ['google', 'apple', 'none'],
+    default: 'none',
+  })
+  provider: string;
+
   @Column({ nullable: true })
   password: string;
 

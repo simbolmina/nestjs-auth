@@ -8,19 +8,20 @@ import { UpdateUserDto } from './dtos/update-user.dto';
 export class UsersService {
   constructor(@InjectRepository(User) private repo: Repository<User>) {}
 
-  async create(email: string, password: string) {
-    const user = this.repo.create({ email, password });
+  async create(data: any) {
+    const user = this.repo.create(data);
     return await this.repo.save(user);
   }
+
   async findAll() {
     return await this.repo.find();
   }
 
-  async find(email: string) {
-    return await this.repo.find({ where: { email } });
+  async findByEmail(email: string) {
+    return await this.repo.findOneBy({ email });
   }
 
-  async findOne(id: string) {
+  async findOneById(id: string) {
     if (!id) {
       return null;
     }
@@ -28,7 +29,7 @@ export class UsersService {
   }
 
   async update(id: string, attrs: UpdateUserDto) {
-    const user = await this.findOne(id);
+    const user = await this.findOneById(id);
     if (!user) {
       throw new NotFoundException('user not found');
     }
@@ -36,7 +37,7 @@ export class UsersService {
   }
 
   async remove(id: string) {
-    const user = await this.findOne(id);
+    const user = await this.findOneById(id);
     if (!user) {
       throw new NotFoundException('user not found');
     }
@@ -44,7 +45,7 @@ export class UsersService {
   }
 
   async deactivate(id: string): Promise<User> {
-    const user = await this.repo.findOne({ where: { id } });
+    const user = await this.repo.findOneBy({ id });
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -52,5 +53,31 @@ export class UsersService {
     user.active = false;
     await this.repo.save(user);
     return user;
+  }
+
+  async createGoogleUser(
+    email: string,
+    displayName: string,
+    picture: string,
+    gender: string,
+    birthDate: Date,
+    provider: string,
+    googleId: string,
+  ) {
+    const user = this.repo.create({
+      email,
+      displayName,
+      picture,
+      isActivatedWithEmail: true,
+      gender,
+      birthDate,
+      provider,
+      googleId,
+    });
+    return await this.repo.save(user);
+  }
+
+  async findByGoogleId(googleId: string) {
+    return this.repo.findOneBy({ googleId });
   }
 }

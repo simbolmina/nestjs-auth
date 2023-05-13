@@ -10,6 +10,7 @@ import {
   NotFoundException,
   UseGuards,
   Res,
+  Req,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dtos/update-user.dto';
@@ -32,86 +33,15 @@ import {
   ApiOkResponse,
   ApiNotFoundResponse,
 } from '@nestjs/swagger';
-import { LoginUserDto, UserLoginResponseDto } from './dtos/login-user.dto';
-import { SignupUserDto, UserSignupResponseDto } from './dtos/signup-user.dto';
-import { Response } from 'express';
 
 @ApiTags('users') // Groups endpoints under the 'users' tag in the Swagger UI
 @Serialize(UserDto)
-@Controller('auth')
+@Controller('users')
 export class UsersController {
   constructor(
     private usersService: UsersService,
     private authService: AuthService,
   ) {}
-
-  @Get('whoami')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth() // Indicates that this route requires Bearer authentication (JWT)
-  @ApiOperation({ summary: 'Get current user' }) // Describes the operation
-  @ApiOkResponse({
-    description: 'Returns the current user',
-    type: UserDto,
-  })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' }) // Describes possible 401 response
-  whoAmI(@CurrentUser() user: User) {
-    return user;
-  }
-
-  @Post('signup')
-  @ApiOperation({ summary: 'User registration' })
-  @ApiCreatedResponse({
-    description: 'The user has been successfully created.',
-    type: UserLoginResponseDto,
-  })
-  @ApiBadRequestResponse({
-    description: 'Invalid data provided or email already in use',
-  })
-  async createUser(
-    @Body() body: SignupUserDto,
-    @Res({ passthrough: true }) res: Response,
-  ) {
-    const { data, token } = await this.authService.signup(
-      body.email,
-      body.password,
-    );
-
-    res.cookie('auth_token', token, {
-      httpOnly: true,
-      maxAge: 72 * 60 * 60 * 1000,
-    });
-
-    return { data, token };
-  }
-
-  @Post('signin')
-  @ApiOperation({ summary: 'User login' })
-  @ApiOkResponse({
-    description: 'Returns the user and access token',
-    type: UserSignupResponseDto,
-  })
-  @ApiBadRequestResponse({
-    description: 'Wrong email or password',
-  })
-  @ApiNotFoundResponse({
-    description: 'User not found',
-  })
-  async signin(
-    @Body() body: LoginUserDto,
-    @Res({ passthrough: true }) res: Response,
-  ) {
-    const { data, token } = await this.authService.signin(
-      body.email,
-      body.password,
-    );
-    // Set the JWT token as a cookie in the response
-    res.cookie('auth_token', token, {
-      httpOnly: true,
-      maxAge: 72 * 60 * 60 * 1000,
-    });
-
-    return { data, token };
-  }
 
   @UseGuards(JwtAuthGuard)
   @Get()
@@ -132,7 +62,7 @@ export class UsersController {
   })
   @ApiResponse({ status: 404, description: 'User not found' })
   async findUser(@Param('id') id: string) {
-    const user = await this.usersService.findOne(id);
+    const user = await this.usersService.findOneById(id);
     if (!user) {
       throw new NotFoundException('user not found');
     }
@@ -148,7 +78,7 @@ export class UsersController {
     type: [User],
   })
   findUsersByEmail(@Query('email') email: string) {
-    return this.usersService.find(email);
+    return this.usersService.findByEmail(email);
   }
 
   // this is actually a PATCH request that sets user.active = false
