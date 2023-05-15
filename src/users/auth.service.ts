@@ -1,15 +1,19 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { UsersService } from './users.service';
+import { GoogleProfile, UsersService } from './users.service';
 import { randomBytes, scrypt as _scrypt } from 'crypto';
 import { promisify } from 'util';
 import { JwtService } from '@nestjs/jwt';
+import { User } from './entities/user.entity';
+import { OAuth2Client } from 'google-auth-library';
 
 //scrypt is async by nature and required to use as a callback. we dont want to use callback so we use primisify to make it a promise
 const scrypt = promisify(_scrypt);
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 @Injectable()
 export class AuthService {
@@ -20,9 +24,16 @@ export class AuthService {
 
   async signup(email: string, password: string) {
     //see if email is in use
-    const users = await this.usersService.findByEmail(email);
+    const user = await this.usersService.findByEmail(email);
 
-    if (users) throw new BadRequestException('email in use');
+    // If user already exists and is a Google user
+    if (user && user.googleId) {
+      throw new ForbiddenException(
+        'This email is associated with a Google account. Please use Google to login.',
+      );
+    }
+
+    if (user) throw new BadRequestException('email in use');
     //hash user password
     //-generate a salt
     //---generate 8 bytes of decimal number and turn it into a hexadecimal string
@@ -36,27 +47,33 @@ export class AuthService {
     const result = salt + '.' + hash.toString('hex');
 
     //create new user and save it
-    const [user] = await this.usersService.create({ email, result });
+    const createdUser = await this.usersService.create(email, result);
     //return the user;
 
-    const payload = { sub: user.id, email: user.email };
+    const payload = { sub: createdUser.id, email: createdUser.email };
+
     return {
-      data: user,
+      data: createdUser,
       token: this.jwtService.sign(payload),
     };
   }
 
-  async signin(email: string, password?: string) {
+  async signin(email: string, password: string) {
     const user = await this.usersService.findByEmail(email);
 
     if (!user) throw new NotFoundException('User not found');
+
+    // Check if user has a password (not a Google user)
+    if (!user.password && user.googleId) {
+      throw new ForbiddenException('Please use Google to login');
+    }
 
     const [salt, storedHash] = user.password.split('.');
 
     const hash = (await scrypt(password, salt, 32)) as Buffer;
 
     if (storedHash !== hash.toString('hex')) {
-      throw new BadRequestException('wrong email or password');
+      throw new BadRequestException('Wrong email or password');
     }
 
     const payload = { sub: user.id, email: user.email };
@@ -66,36 +83,72 @@ export class AuthService {
     };
   }
 
-  async googleLogin({
-    email,
-    googleId,
-    picture,
-    displayName,
-    birthDate,
-    isActivatedWithEmail,
-    firstName,
-    provider,
-  }) {
+  async googleLogin(token: string) {
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    // Get the user's Google ID
+    const googleId = payload['sub'];
+
+    // Get or create the user with this Google ID
     let user = await this.usersService.findByGoogleId(googleId);
 
     if (!user) {
-      [user] = await this.usersService.create({
-        email,
+      user = await this.usersService.createFromGoogle({
+        email: payload['email'],
         googleId,
-        picture,
-        displayName,
-        birthDate,
-        isActivatedWithEmail,
-        firstName,
-        provider,
+        picture: payload['picture'],
+        displayName: payload['displayName'],
+        firstName: payload['given_name'],
+        provider: 'google',
+        isActivatedWithEmail: payload['email_verified'],
       });
     }
 
-    const payload = { sub: user.id, email: user.email };
+    const jwtPayload = { sub: user.id, email: user.email };
 
     return {
       data: user,
-      token: this.jwtService.sign(payload),
+      token: this.jwtService.sign(jwtPayload),
     };
   }
 }
+
+// if we allow user to use their gmail as a regular signup method, we can use this method. original one rejects google users as their mail address is in use.
+// async signup(email: string, password: string) {
+//   //see if email is in use
+//   const user = await this.usersService.findByEmail(email);
+
+//   if (user) {
+//     if (user.googleId && !user.password) {
+//       // If this email is tied to a Google account and doesn't have a password yet
+//       // We'll set a password for it
+//       const salt = randomBytes(8).toString('hex');
+//       const hash = (await scrypt(password, salt, 32)) as Buffer;
+//       const result = salt + '.' + hash.toString('hex');
+//       // update user password
+//       const updatedUser = await this.usersService.updatePassword(user.id, result);
+//       const payload = { sub: updatedUser.id, email: updatedUser.email };
+//       return {
+//         data: updatedUser,
+//         token: this.jwtService.sign(payload),
+//       };
+//     } else {
+//       throw new BadRequestException('email in use');
+//     }
+//   }
+
+//   // If email is not in use, continue with the regular signup process
+//   const salt = randomBytes(8).toString('hex');
+//   const hash = (await scrypt(password, salt, 32)) as Buffer;
+//   const result = salt + '.' + hash.toString('hex');
+//   const createdUser = await this.usersService.create(email, result);
+//   const payload = { sub: createdUser.id, email: createdUser.email };
+//   return {
+//     data: createdUser,
+//     token: this.jwtService.sign(payload),
+//   };
+// }

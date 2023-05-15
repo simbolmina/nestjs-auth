@@ -33,11 +33,12 @@ import {
   ApiUnauthorizedResponse,
   ApiOkResponse,
   ApiNotFoundResponse,
+  ApiForbiddenResponse,
 } from '@nestjs/swagger';
 import { LoginUserDto, UserLoginResponseDto } from './dtos/login-user.dto';
 import { SignupUserDto, UserSignupResponseDto } from './dtos/signup-user.dto';
 import { Response } from 'express';
-import { GoogleOauthGuard } from '../guards/google.guard';
+import { GoogleLoginDto } from './dtos/google-login.dto';
 
 @ApiTags('auth') // Groups endpoints under the 'users' tag in the Swagger UI
 @Serialize(UserDto)
@@ -57,6 +58,9 @@ export class AuthController {
   @ApiBadRequestResponse({
     description: 'Invalid data provided or email already in use',
   })
+  @ApiForbiddenResponse({
+    description: 'The email is associated with a Google account',
+  })
   async registerUser(
     @Body() body: SignupUserDto,
     @Res({ passthrough: true }) res: Response,
@@ -74,7 +78,7 @@ export class AuthController {
     return { data, token };
   }
 
-  @Post('signin')
+  @Post('login')
   @ApiOperation({ summary: 'User login' })
   @ApiOkResponse({
     description: 'Returns the user and access token',
@@ -85,6 +89,9 @@ export class AuthController {
   })
   @ApiNotFoundResponse({
     description: 'User not found',
+  })
+  @ApiForbiddenResponse({
+    description: 'User is registered through Google',
   })
   async signin(
     @Body() body: LoginUserDto,
@@ -103,40 +110,27 @@ export class AuthController {
     return { data, token };
   }
 
-  @Post('google')
-  @ApiOperation({ summary: 'Google User login' })
-  @ApiOkResponse({
-    description: 'Returns the user and access token',
-    type: UserSignupResponseDto,
+  @Post('google-login')
+  @ApiOperation({ summary: 'Google login' })
+  @ApiCreatedResponse({
+    description: 'The user has been successfully logged in or created.',
+    type: UserLoginResponseDto,
   })
   @ApiBadRequestResponse({
     description: 'Invalid data provided',
   })
-  async googleSignin(
-    @Body() body: Partial<User>,
+  async googleLogin(
+    @Body() body: GoogleLoginDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    console.log(body);
-    const { data, token } = await this.authService.googleLogin(body as any);
-    // Set the JWT token as a cookie in the response
+    // console.log(body);
+    const { data, token } = await this.authService.googleLogin(body.credential);
+
     res.cookie('auth_token', token, {
       httpOnly: true,
       maxAge: 72 * 60 * 60 * 1000,
     });
 
     return { data, token };
-  }
-
-  @Get('whoami')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth() // Indicates that this route requires Bearer authentication (JWT)
-  @ApiOperation({ summary: 'Get current user' }) // Describes the operation
-  @ApiOkResponse({
-    description: 'Returns the current user',
-    type: UserDto,
-  })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' }) // Describes possible 401 response
-  whoAmI(@CurrentUser() user: User) {
-    return user;
   }
 }

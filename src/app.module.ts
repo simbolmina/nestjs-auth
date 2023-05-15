@@ -16,6 +16,8 @@ import { OrdersModule } from './orders/orders.module';
 import { AttachmentsModule } from './attachments/attachments.module';
 import { VariantsModule } from './variants/variants.module';
 import { ReviewsModule } from './reviews/reviews.module';
+import { TerminusModule } from '@nestjs/terminus';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
@@ -33,6 +35,8 @@ import { ReviewsModule } from './reviews/reviews.module';
     AttachmentsModule,
     VariantsModule,
     ReviewsModule,
+    TerminusModule,
+    HttpModule,
   ],
   controllers: [AppController],
   providers: [AppService],

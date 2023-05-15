@@ -10,13 +10,6 @@ import {
 
 export class UpdateUserDto {
   @ApiProperty({
-    description: 'The email of the user',
-    example: 'test@test.com',
-  })
-  @IsEmail()
-  email: string;
-
-  @ApiProperty({
     description: 'The display name of the user',
     example: 'JohnDoe',
     required: false,

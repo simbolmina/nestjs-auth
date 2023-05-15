@@ -32,10 +32,11 @@ import {
   ApiUnauthorizedResponse,
   ApiOkResponse,
   ApiNotFoundResponse,
+  ApiBody,
 } from '@nestjs/swagger';
+import { AdminGuard } from '../guards/admin.guard';
 
 @ApiTags('users') // Groups endpoints under the 'users' tag in the Swagger UI
-@Serialize(UserDto)
 @Controller('users')
 export class UsersController {
   constructor(
@@ -43,7 +44,7 @@ export class UsersController {
     private authService: AuthService,
   ) {}
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, new AdminGuard())
   @Get()
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get all users' })
@@ -52,7 +53,60 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
+  @Serialize(UserDto)
+  @Get('/me')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get current user' })
+  @ApiOkResponse({
+    description: 'Returns the current user',
+    type: UserDto,
+  })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  whoAmI(@CurrentUser() user: User) {
+    return user;
+  }
+
+  @Serialize(UserDto)
+  @UseGuards(JwtAuthGuard)
+  @Patch('/me')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update current user' })
+  @ApiOkResponse({
+    description: 'Returns the updated user',
+    type: UserDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid data provided',
+  })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiBody({
+    description: 'Allowed data to be updated by user',
+    type: UpdateUserDto,
+  })
+  updateCurrentUser(
+    @CurrentUser() user: User,
+    @Body() body: Partial<UpdateUserDto>,
+  ) {
+    return this.usersService.update(user.id, body);
+  }
+
+  @Serialize(UserDto)
+  @UseGuards(JwtAuthGuard)
+  @Delete('/me')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Deactivate current user' })
+  @ApiOkResponse({
+    description: 'User has been deactivated',
+  })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  removeCurrentUser(@CurrentUser() user: User) {
+    return this.usersService.deactivate(user.id);
+  }
+
+  @UseGuards(JwtAuthGuard, new AdminGuard())
   @Get('/:id')
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Get user by ID' })
   @ApiParam({ name: 'id', description: 'User ID' })
   @ApiResponse({
@@ -69,7 +123,9 @@ export class UsersController {
     return user;
   }
 
-  @Get()
+  @UseGuards(JwtAuthGuard, new AdminGuard())
+  @Get('/:email')
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Get users by email' })
   @ApiQuery({ name: 'email', description: 'Email to search for users' })
   @ApiResponse({
@@ -82,7 +138,9 @@ export class UsersController {
   }
 
   // this is actually a PATCH request that sets user.active = false
+  @UseGuards(JwtAuthGuard, new AdminGuard())
   @Delete('/:id')
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Deactivate user by ID' })
   @ApiParam({ name: 'id', description: 'User ID' })
   @ApiResponse({ status: 200, description: 'User has been deactivated' })
@@ -90,7 +148,9 @@ export class UsersController {
     return this.usersService.deactivate(id);
   }
 
+  @UseGuards(JwtAuthGuard, new AdminGuard())
   @Patch('/:id')
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Update user by ID' })
   @ApiParam({ name: 'id', description: 'User ID' })
   updateUser(@Param('id') id: string, @Body() body: UpdateUserDto) {

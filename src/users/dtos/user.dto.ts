@@ -11,7 +11,7 @@ export class UserDto {
 
   @ApiProperty({
     description: 'The email of the user',
-    example: 'test@test.com',
+    example: 'example@email.com',
   })
   @Expose()
   email: string;

@@ -5,7 +5,7 @@ import { UserDto } from './user.dto';
 export class LoginUserDto {
   @ApiProperty({
     description: 'The email of the user',
-    example: 'test@test.com',
+    example: 'example@email.com',
   })
   @IsEmail()
   email: string;
@@ -22,7 +22,7 @@ export class LoginUserDto {
 
 export class UserLoginResponseDto {
   @ApiProperty({ type: () => UserDto })
-  user: UserDto;
+  data: UserDto;
 
   @ApiProperty()
   token: string;

@@ -41,7 +41,7 @@ describe('Authentication System (e2e)', () => {
       .expect(201)
       .then((res) => {
         const { user, token } = res.body;
-        console.log(res.body);
+        // console.log(res.body);
         expect(user).toBeDefined();
         expect(token).toBeDefined();
         expect(user.id).toBeDefined();

@@ -4,15 +4,24 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { UpdateUserDto } from './dtos/update-user.dto';
 
+export type GoogleProfile = {
+  email: string;
+  googleId: string;
+  picture: string;
+  displayName: string;
+  isActivatedWithEmail: boolean;
+  firstName: string;
+  provider: string;
+};
+
 @Injectable()
 export class UsersService {
   constructor(@InjectRepository(User) private repo: Repository<User>) {}
 
-  async create(data: any) {
-    const user = this.repo.create(data);
+  async create(email: string, password: string) {
+    const user = this.repo.create({ email, password });
     return await this.repo.save(user);
   }
-
   async findAll() {
     return await this.repo.find();
   }
@@ -26,6 +35,16 @@ export class UsersService {
       return null;
     }
     return await this.repo.findOneBy({ id });
+  }
+
+  async findByGoogleId(googleId: string) {
+    return this.repo.findOneBy({ googleId });
+  }
+
+  // inside your UsersService
+  async createFromGoogle(profile: GoogleProfile): Promise<User> {
+    const user = this.repo.create(profile);
+    return this.repo.save(user);
   }
 
   async update(id: string, attrs: UpdateUserDto) {
@@ -44,8 +63,17 @@ export class UsersService {
     return this.repo.remove(user);
   }
 
+  async updatePassword(id: string, password: string) {
+    const user = await this.findOneById(id);
+    if (!user) {
+      throw new NotFoundException('user not found');
+    }
+    user.password = password;
+    return this.repo.save(user);
+  }
+
   async deactivate(id: string): Promise<User> {
-    const user = await this.repo.findOneBy({ id });
+    const user = await this.repo.findOne({ where: { id } });
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -53,31 +81,5 @@ export class UsersService {
     user.active = false;
     await this.repo.save(user);
     return user;
-  }
-
-  async createGoogleUser(
-    email: string,
-    displayName: string,
-    picture: string,
-    gender: string,
-    birthDate: Date,
-    provider: string,
-    googleId: string,
-  ) {
-    const user = this.repo.create({
-      email,
-      displayName,
-      picture,
-      isActivatedWithEmail: true,
-      gender,
-      birthDate,
-      provider,
-      googleId,
-    });
-    return await this.repo.save(user);
-  }
-
-  async findByGoogleId(googleId: string) {
-    return this.repo.findOneBy({ googleId });
   }
 }
