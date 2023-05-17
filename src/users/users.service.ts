@@ -48,11 +48,11 @@ export class UsersService {
   }
 
   async update(id: string, attrs: UpdateUserDto) {
-    const user = await this.findOneById(id);
+    const user = await this.repo.preload({ id, ...attrs });
     if (!user) {
       throw new NotFoundException('user not found');
     }
-    return this.repo.save({ ...user, ...attrs });
+    return this.repo.save(user);
   }
 
   async remove(id: string) {
@@ -83,3 +83,11 @@ export class UsersService {
     return user;
   }
 }
+
+// async update(id: string, attrs: UpdateUserDto) {
+//   const user = await this.findOneById(id);
+//   if (!user) {
+//     throw new NotFoundException('user not found');
+//   }
+//   return this.repo.save({ ...user, ...attrs });
+// }

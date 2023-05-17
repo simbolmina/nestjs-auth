@@ -1,11 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { CreateBrandDto } from './dto/create-brand.dto';
 import { UpdateBrandDto } from './dto/update-brand.dto';
+import { Brand } from './entities/brand.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class BrandsService {
-  create(createBrandDto: CreateBrandDto) {
-    return 'This action adds a new brand';
+  constructor(@InjectRepository(Brand) private repo: Repository<Brand>) {}
+
+  async create(createBrandDto: CreateBrandDto): Promise<Brand> {
+    const brand = this.repo.create(createBrandDto);
+    return await this.repo.save(brand);
   }
 
   findAll() {

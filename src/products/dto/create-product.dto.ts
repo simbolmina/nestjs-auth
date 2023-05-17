@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import {
   IsNotEmpty,
   IsString,
@@ -10,7 +11,11 @@ import {
   ValidationArguments,
   registerDecorator,
   ValidationOptions,
+  IsUUID,
 } from 'class-validator';
+import { Brand } from 'src/brands/entities/brand.entity';
+import { Category } from 'src/categories/entities/category.entity';
+import { UUID } from 'typeorm/driver/mongodb/bson.typings';
 
 enum ProductStatus {
   Draft = 'draft',
@@ -49,54 +54,68 @@ function IsLessThan(property: string, validationOptions?: ValidationOptions) {
 }
 
 export class CreateProductDto {
+  @ApiProperty()
   @IsNotEmpty()
   @IsString()
   name: string;
 
+  @ApiProperty()
   @IsOptional()
   @IsString()
   slug: string;
 
+  @ApiProperty()
   @IsNotEmpty()
   @IsString()
   description: string;
 
+  @ApiProperty()
   @IsNotEmpty()
-  @IsNumber()
-  categoryId: number;
+  @IsString()
+  @IsUUID()
+  categoryId: Category;
 
+  @ApiProperty()
   @IsNotEmpty()
-  @IsNumber()
-  brandId: number;
+  @IsString()
+  @IsUUID()
+  brandId: Brand;
 
+  @ApiProperty()
   @IsNotEmpty()
   @IsNumber()
   @Min(0)
   price: number;
 
+  @ApiProperty()
   @IsOptional()
   @IsNumber()
   @IsLessThan('price')
   salePrice: number;
 
+  @ApiProperty()
   @IsNotEmpty()
   @IsNumber()
   quantity: number;
 
+  @ApiProperty()
   @IsNotEmpty()
   @IsEnum(ProductStatus)
   status: string;
 
+  @ApiProperty()
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
   tags: string[];
 
+  @ApiProperty()
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
   meta: string[];
 
+  @ApiProperty()
   @IsNotEmpty()
   @IsBoolean()
   isFeatured: boolean;
