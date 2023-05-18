@@ -43,7 +43,7 @@ describe('UsersController', () => {
           password: 'test',
         } as User);
       },
-      update: (id: string, attrs: Partial<User>) => {
+      updateCurrentUser: (id: string, attrs: Partial<User>) => {
         return Promise.resolve({
           id,
           email: 'test@test.com',

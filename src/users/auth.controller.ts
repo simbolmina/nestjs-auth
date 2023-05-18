@@ -1,36 +1,13 @@
-import {
-  Body,
-  Controller,
-  Post,
-  Get,
-  Patch,
-  Param,
-  Query,
-  Delete,
-  NotFoundException,
-  UseGuards,
-  Res,
-  Req,
-  HttpStatus,
-} from '@nestjs/common';
+import { Body, Controller, Post, Res } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { UpdateUserDto } from './dtos/update-user.dto';
 import { UserDto } from './dtos/user.dto';
 import { Serialize } from '../interceptors/serialize.interceptor';
 import { AuthService } from './auth.service';
-import { JwtAuthGuard } from '../guards/jwt-auth.guard';
-import { CurrentUser } from './decorators/current-user.decorator';
-import { User } from './entities/user.entity';
 import {
   ApiCreatedResponse,
   ApiBadRequestResponse,
   ApiTags,
-  ApiBearerAuth,
   ApiOperation,
-  ApiParam,
-  ApiQuery,
-  ApiResponse,
-  ApiUnauthorizedResponse,
   ApiOkResponse,
   ApiNotFoundResponse,
   ApiForbiddenResponse,

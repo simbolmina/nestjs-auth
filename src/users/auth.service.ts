@@ -139,7 +139,7 @@ export class AuthService {
     const newHash = (await scrypt(newPassword, newSalt, 32)) as Buffer;
 
     user.password = newSalt + '.' + newHash.toString('hex');
-    await this.usersService.update(user.id, user);
+    await this.usersService.updateCurrentUser(user.id, user);
 
     return { message: 'Password successfully updated' };
   }

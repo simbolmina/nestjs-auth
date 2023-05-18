@@ -126,11 +126,32 @@ describe('UsersService', () => {
     let user = await usersService.create(email, password);
 
     const newGender = 'male';
-    const updatedUser = await usersService.update(user.id, {
+    const updatedUser = await usersService.updateCurrentUser(user.id, {
       gender: newGender,
     });
 
     expect(updatedUser.gender).toBe(newGender);
+  });
+
+  it('should update a user by admin (additional fields)', async () => {
+    const email = 'test5@example.com';
+    const password = 'testpassword5';
+    let user = await usersService.create(email, password);
+
+    const newEmail = 'updated2@example.com';
+    const newRole = 'admin';
+    const newIsVIP = true;
+
+    const updatedUser = await usersService.updateUserByAdmin(user.id, {
+      email: newEmail,
+      role: newRole,
+      isVIP: newIsVIP,
+    });
+
+    // Check that the email, role and isVIP were updated
+    expect(updatedUser.email).toBe(newEmail);
+    expect(updatedUser.role).toBe(newRole);
+    expect(updatedUser.isVIP).toBe(newIsVIP);
   });
 
   it('should remove a user if it exists', async () => {

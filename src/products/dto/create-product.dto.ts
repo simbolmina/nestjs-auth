@@ -69,13 +69,17 @@ export class CreateProductDto {
   @IsString()
   description: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    example: '60a7b4b3-0b0a-4b4e-8b7a-5b0b2d7b0b2d',
+  })
   @IsNotEmpty()
   @IsString()
   @IsUUID()
   categoryId: Category;
 
-  @ApiProperty()
+  @ApiProperty({
+    example: '60a7b4b3-0b0a-4b4e-8b7a-5b0b2d7b0b2d',
+  })
   @IsNotEmpty()
   @IsString()
   @IsUUID()

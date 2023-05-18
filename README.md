@@ -83,8 +83,32 @@ For an example in action, check out this video: [https://www.youtube.com/watch?v
 
 ## API Documentation
 
-API documentation is provided through the Swagger UI, which can be accessed at [http://localhost:3000/api-doc?authToken=Docs-123456](http://localhost:3000/api-doc?authToken=Docs-123456). For some examples, check out this video: [https://www.youtube.com/watch?v=lZmsY0e2ojQ](https://www.youtube.com/watch?v=lZmsY0e2ojQ).
+API documentation is provided through the Swagger UI, which can be accessed at [http://localhost:3000/api-doc](http://localhost:3000/api-doc). For some examples, check out this video: [https://www.youtube.com/watch?v=lZmsY0e2ojQ](https://www.youtube.com/watch?v=lZmsY0e2ojQ).
 
 ### .env Configuration
 
-NestJS has a unique .env system, and a robust environment variable system has not yet been implemented in this project. For now, please add the necessary variable names as hardcoded values.
+NestJS uses the `dotenv` module for environment variable management. You can define your configuration in a `.env` file in the root directory of your project. The variables in this file can be accessed via the `ConfigService`.
+
+Here's a quick setup:
+
+1. Install the necessary module: `npm install @nestjs/config`
+2. Import `ConfigModule` in your `app.module.ts`:
+
+```typescript
+@Module({
+  imports: [ConfigModule.forRoot()],
+})
+export class AppModule {}
+```
+
+3. Inject and use `ConfigService` to access your environment variables:
+
+```typescript
+constructor(private configService: ConfigService) {}
+
+someMethod() {
+  const dbUser = this.configService.get<string>('DB_USER');
+}
+```
+
+For more detailed information, refer to the NestJS configuration documentation: https://docs.nestjs.com/techniques/configuration

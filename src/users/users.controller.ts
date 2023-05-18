@@ -13,7 +13,7 @@ import {
   Req,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { UpdateUserDto } from './dtos/update-user.dto';
+import { AdminUpdateUserDto, UpdateUserDto } from './dtos/update-user.dto';
 import { UserDto } from './dtos/user.dto';
 import { Serialize } from '../interceptors/serialize.interceptor';
 import { AuthService } from './auth.service';
@@ -60,7 +60,7 @@ export class UsersController {
   async findAllUsers() {
     const users = await this.usersService.findAll();
     if (!users.length) {
-      throw new NotFoundException('No users found'); // Throw NotFoundException if no users are found
+      throw new NotFoundException('No users found');
     }
     return users;
   }
@@ -104,11 +104,11 @@ export class UsersController {
     description: 'Allowed data to be updated by user',
     type: UpdateUserDto,
   })
-  updateCurrentUser(
+  async updateCurrentUser(
     @CurrentUser() user: User,
     @Body() body: Partial<UpdateUserDto>,
   ) {
-    return this.usersService.update(user.id, body);
+    return await this.usersService.updateCurrentUser(user.id, body);
   }
 
   @Serialize(UserDto)
@@ -124,8 +124,8 @@ export class UsersController {
     description: 'User has been deactivated',
   })
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  removeCurrentUser(@CurrentUser() user: User) {
-    return this.usersService.deactivate(user.id);
+  async removeCurrentUser(@CurrentUser() user: User) {
+    return await this.usersService.deactivate(user.id);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -194,8 +194,8 @@ export class UsersController {
   @ApiNotFoundResponse({ description: 'User not found' })
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   @ApiForbiddenResponse({ description: 'Forbidden resource' })
-  findUserByEmail(@Query('email') email: string) {
-    return this.usersService.findByEmail(email);
+  async findUserByEmail(@Query('email') email: string) {
+    return await this.usersService.findByEmail(email);
   }
 
   // this is actually a PATCH request that sets user.active = false
@@ -220,7 +220,7 @@ export class UsersController {
   @Patch('/:id')
   @ApiBody({
     description: 'Allowed data to be updated by user',
-    type: User,
+    type: AdminUpdateUserDto,
   })
   @ApiBearerAuth()
   @ApiOkResponse({ type: User })
@@ -233,8 +233,8 @@ export class UsersController {
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   @ApiForbiddenResponse({ description: 'Forbidden resource' })
   @ApiParam({ name: 'id', description: 'User ID' })
-  updateUser(@Param('id') id: string, @Body() body: Partial<User>) {
-    return this.usersService.update(id, body);
+  async updateUser(@Param('id') id: string, @Body() body: Partial<User>) {
+    return await this.usersService.updateUserByAdmin(id, body);
   }
 
   @UseGuards(JwtAuthGuard, AdminGuard)

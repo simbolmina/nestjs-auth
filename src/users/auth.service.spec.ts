@@ -74,7 +74,7 @@ describe('AuthService', () => {
         users.push(user);
         return Promise.resolve(user);
       },
-      update: (id: string, attrs: Partial<User>) => {
+      updateCurrentUser: (id: string, attrs: Partial<User>) => {
         let user = fakeUsersService.findOneById(id);
         if (!user) {
           throw new NotFoundException('user not found');
