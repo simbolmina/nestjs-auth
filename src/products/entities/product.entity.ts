@@ -1,4 +1,4 @@
-import { Brand } from 'src/brands/entities/brand.entity';
+import { Brand } from '../../brands/entities/brand.entity';
 import { Category } from '../../categories/entities/category.entity';
 import { User } from '../../users/entities/user.entity';
 import {

@@ -10,6 +10,7 @@ import { promisify } from 'util';
 import { JwtService } from '@nestjs/jwt';
 import { User } from './entities/user.entity';
 import { OAuth2Client } from 'google-auth-library';
+import { ChangePasswordDto } from './dtos/change-password.dto';
 
 //scrypt is async by nature and required to use as a callback. we dont want to use callback so we use primisify to make it a promise
 const scrypt = promisify(_scrypt);
@@ -115,40 +116,31 @@ export class AuthService {
       token: this.jwtService.sign(jwtPayload),
     };
   }
+
+  async changePassword(
+    userId: string,
+    changePasswordDto: ChangePasswordDto,
+  ): Promise<{ message: string }> {
+    const user = await this.usersService.findOneById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const { oldPassword, newPassword } = changePasswordDto;
+    const [salt, storedHash] = user.password.split('.');
+
+    const hash = (await scrypt(oldPassword, salt, 32)) as Buffer;
+
+    if (storedHash !== hash.toString('hex')) {
+      throw new BadRequestException('Old password is incorrect');
+    }
+
+    const newSalt = randomBytes(8).toString('hex');
+    const newHash = (await scrypt(newPassword, newSalt, 32)) as Buffer;
+
+    user.password = newSalt + '.' + newHash.toString('hex');
+    await this.usersService.update(user.id, user);
+
+    return { message: 'Password successfully updated' };
+  }
 }
-
-// if we allow user to use their gmail as a regular signup method, we can use this method. original one rejects google users as their mail address is in use.
-// async signup(email: string, password: string) {
-//   //see if email is in use
-//   const user = await this.usersService.findByEmail(email);
-
-//   if (user) {
-//     if (user.googleId && !user.password) {
-//       // If this email is tied to a Google account and doesn't have a password yet
-//       // We'll set a password for it
-//       const salt = randomBytes(8).toString('hex');
-//       const hash = (await scrypt(password, salt, 32)) as Buffer;
-//       const result = salt + '.' + hash.toString('hex');
-//       // update user password
-//       const updatedUser = await this.usersService.updatePassword(user.id, result);
-//       const payload = { sub: updatedUser.id, email: updatedUser.email };
-//       return {
-//         data: updatedUser,
-//         token: this.jwtService.sign(payload),
-//       };
-//     } else {
-//       throw new BadRequestException('email in use');
-//     }
-//   }
-
-//   // If email is not in use, continue with the regular signup process
-//   const salt = randomBytes(8).toString('hex');
-//   const hash = (await scrypt(password, salt, 32)) as Buffer;
-//   const result = salt + '.' + hash.toString('hex');
-//   const createdUser = await this.usersService.create(email, result);
-//   const payload = { sub: createdUser.id, email: createdUser.email };
-//   return {
-//     data: createdUser,
-//     token: this.jwtService.sign(payload),
-//   };
-// }

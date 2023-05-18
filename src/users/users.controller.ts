@@ -35,6 +35,7 @@ import {
   ApiBody,
 } from '@nestjs/swagger';
 import { AdminGuard } from '../guards/admin.guard';
+import { ChangePasswordDto } from './dtos/change-password.dto';
 
 @ApiTags('users') // Groups endpoints under the 'users' tag in the Swagger UI
 @Controller('users')
@@ -47,7 +48,10 @@ export class UsersController {
   @UseGuards(JwtAuthGuard, new AdminGuard())
   @Get()
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get all users' })
+  @ApiOperation({
+    summary: 'Get all users',
+    description: 'This endpoint is only accessible by admin users',
+  })
   @ApiResponse({ status: 200, description: 'Returns all users', type: [User] })
   findAllUsers() {
     return this.usersService.findAll();
@@ -104,6 +108,28 @@ export class UsersController {
     return this.usersService.deactivate(user.id);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Patch('/me/password')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Change current user password' })
+  @ApiOkResponse({
+    description: 'Password has been changed',
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid data provided',
+  })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiBody({
+    description: 'Password change data',
+    type: ChangePasswordDto,
+  })
+  async changeMyPassword(
+    @CurrentUser() user: User,
+    @Body() changePasswordDto: ChangePasswordDto,
+  ) {
+    return this.authService.changePassword(user.id, changePasswordDto);
+  }
+
   @UseGuards(JwtAuthGuard, new AdminGuard())
   @Get('/:id')
   @ApiBearerAuth()
@@ -150,10 +176,14 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard, new AdminGuard())
   @Patch('/:id')
+  @ApiBody({
+    description: 'Allowed data to be updated by user',
+    type: User,
+  })
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update user by ID' })
   @ApiParam({ name: 'id', description: 'User ID' })
-  updateUser(@Param('id') id: string, @Body() body: UpdateUserDto) {
+  updateUser(@Param('id') id: string, @Body() body: Partial<User>) {
     return this.usersService.update(id, body);
   }
 }

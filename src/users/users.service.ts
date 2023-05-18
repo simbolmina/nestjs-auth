@@ -63,15 +63,6 @@ export class UsersService {
     return this.repo.remove(user);
   }
 
-  async updatePassword(id: string, password: string) {
-    const user = await this.findOneById(id);
-    if (!user) {
-      throw new NotFoundException('user not found');
-    }
-    user.password = password;
-    return this.repo.save(user);
-  }
-
   async deactivate(id: string): Promise<User> {
     const user = await this.repo.findOne({ where: { id } });
     if (!user) {
@@ -90,4 +81,13 @@ export class UsersService {
 //     throw new NotFoundException('user not found');
 //   }
 //   return this.repo.save({ ...user, ...attrs });
+// }
+
+// async updatePassword(id: string, password: string) {
+//   const user = await this.findOneById(id);
+//   if (!user) {
+//     throw new NotFoundException('user not found');
+//   }
+//   user.password = password;
+//   return this.repo.save(user);
 // }
