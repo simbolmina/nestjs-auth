@@ -9,24 +9,19 @@ import { NotFoundException } from '@nestjs/common';
 describe('UsersService', () => {
   let usersService: UsersService;
   let fakeUserRepository: Partial<Repository<User>>;
-
   const userArray: User[] = [];
+
+  beforeEach(() => {
+    userArray.length = 0;
+    jest.resetAllMocks();
+  });
 
   beforeEach(async () => {
     fakeUserRepository = {
-      // create: (user : any) => {
-      //   userArray.push(user);
-      //   return user;
-      // },
-      // save: (user: User) => {
-      //   userArray.push(user);
-      //   return Promise.resolve(user);
-      // },
       create: jest.fn().mockImplementation((user) => {
         user.id = uuidv4();
         user.gender = 'other';
         user.role = 'user';
-        userArray.push(user);
         return user;
       }),
 
@@ -39,37 +34,40 @@ describe('UsersService', () => {
         return Promise.resolve(user);
       }),
 
-      find: () => {
+      find: jest.fn().mockImplementation(() => {
         return Promise.resolve(userArray);
-      },
-      findOne: (id) => {
-        const foundUser = userArray.find((user) => user.id === id);
+      }),
+
+      findOne: jest.fn().mockImplementation((options) => {
+        const foundUser = userArray.find(
+          (user) => user.id === options.where.id,
+        );
         return Promise.resolve(foundUser);
-      },
-      // remove: async (id) => {
-      //   const index = userArray.findIndex((u) => u.id === id);
-      //   if (index !== -1) {
-      //     const [removedUser] = userArray.splice(index, 1);
-      //     return Promise.resolve(removedUser);
-      //   }
-      //   return Promise.resolve(undefined);
-      // },
+      }),
+
       remove: jest.fn().mockImplementation((user: User) => {
         const index = userArray.findIndex((u) => u.id === user.id);
         if (index !== -1) {
           const [removedUser] = userArray.splice(index, 1);
           return Promise.resolve(removedUser);
         }
-        throw new Error('User not found');
+        return Promise.resolve(undefined);
       }),
 
-      findOneBy: (options) => {
+      findOneBy: jest.fn().mockImplementation((options) => {
         const keys = Object.keys(options);
         const foundUser = userArray.find((user) => {
           return keys.every((key) => user[key] === options[key]);
         });
         return Promise.resolve(foundUser);
-      },
+      }),
+      preload: jest.fn().mockImplementation((values) => {
+        const user = userArray.find((user) => user.id === values.id);
+        if (!user) {
+          return undefined;
+        }
+        return { ...user, ...values };
+      }),
     };
 
     const module = await Test.createTestingModule({
@@ -85,46 +83,55 @@ describe('UsersService', () => {
     usersService = module.get<UsersService>(UsersService);
   });
 
-  // it('should be defined', () => {
-  //   expect(usersService).toBeDefined();
-  // });
+  it('should be defined', () => {
+    expect(usersService).toBeDefined();
+  });
 
-  // it('should create a user', async () => {
-  //   const email = 'test@example.com';
-  //   const password = 'testpassword';
-  //   const user = await usersService.create(email, password);
+  it('should create a user', async () => {
+    const email = 'test@example.com';
+    const password = 'testpassword';
+    const user = await usersService.create(email, password);
 
-  //   expect(user.email).toBe(email);
-  //   expect(user.password).toBe(password);
-  // });
+    expect(user.email).toBe(email);
+    expect(user.password).toBe(password);
+    expect(fakeUserRepository.create).toHaveBeenCalledWith(
+      expect.objectContaining({ email, password }),
+    );
+    expect(fakeUserRepository.save).toHaveBeenCalledWith(
+      expect.objectContaining({ email, password }),
+    );
+  });
 
-  // it('should find all users', async () => {
-  //   const users = await usersService.findAll();
-  //   expect(users.length).toBe(userArray.length);
-  // });
+  it('should find all users', async () => {
+    const users = await usersService.findAll();
+    expect(users.length).toBe(userArray.length);
+  });
 
-  // it('should find one user by id', async () => {
-  //   const email = 'test2@example.com';
-  //   const password = 'testpassword2';
-  //   const user = await usersService.create(email, password);
-  //   const foundUser = await usersService.findOneById(user.id);
+  it('should find one user by id', async () => {
+    const email = 'test2@example.com';
+    const password = 'testpassword2';
+    const user = await usersService.create(email, password);
+    const foundUser = await usersService.findOneById(user.id);
 
-  //   expect(foundUser).toBeDefined();
-  //   expect(foundUser.email).toBe(email);
-  // });
+    expect(foundUser).toBeDefined();
+    expect(foundUser.email).toBe(email);
+    expect(fakeUserRepository.findOneBy).toHaveBeenCalledWith({
+      id: user.id,
+    });
+  });
 
-  // it('should update a user', async () => {
-  //   const email = 'test3@example.com';
-  //   const password = 'testpassword3';
-  //   let user = await usersService.create(email, password);
+  it('should update a user', async () => {
+    const email = 'test3@example.com';
+    const password = 'testpassword3';
+    let user = await usersService.create(email, password);
 
-  //   const newGender = 'male';
-  //   const updatedUser = await usersService.update(user.id, {
-  //     gender: newGender,
-  //   });
+    const newGender = 'male';
+    const updatedUser = await usersService.update(user.id, {
+      gender: newGender,
+    });
 
-  //   expect(updatedUser.gender).toBe(newGender);
-  // });
+    expect(updatedUser.gender).toBe(newGender);
+  });
 
   it('should remove a user if it exists', async () => {
     const email = 'test4@example.com';
@@ -136,93 +143,66 @@ describe('UsersService', () => {
     expect(await usersService.findOneById(user.id)).toBeUndefined();
   });
 
-  // it('should throw an error if a user does not exist', async () => {
-  //   const nonExistentUserId = 'non-existent-id';
-  //   await expect(usersService.remove(nonExistentUserId)).rejects.toThrow(
-  //     NotFoundException,
-  //   );
-  // });
+  it('should throw an error if a user does not exist', async () => {
+    const nonExistentUserId = 'non-existent-id';
+    await expect(usersService.remove(nonExistentUserId)).rejects.toThrow(
+      NotFoundException,
+    );
+    expect(fakeUserRepository.remove).not.toHaveBeenCalled();
+  });
 
-  // it('should remove a user', async () => {
-  //   const email = 'test4@example.com';
-  //   const password = 'testpassword4';
-  //   const user = await usersService.create(email, password);
+  it('should deactivate a user', async () => {
+    const email = 'test5@example.com';
+    const password = 'testpassword5';
+    const user = await usersService.create(email, password);
+    console.log(user);
 
-  //   console.log('user', user);
-
-  //   const removedUser = await usersService.remove(user.id);
-  //   console.log('removed user', removedUser);
-  //   expect(removedUser).toBeDefined();
-  //   expect(removedUser.email).toBe(email);
-
-  //   const foundUser = await usersService.findOneById(user.id);
-  //   expect(foundUser).toBeUndefined(); // this is correct
-  // });
-
-  // it('should deactivate a user', async () => {
-  //   const email = 'test5@example.com';
-  //   const password = 'testpassword5';
-  //   const user = await usersService.create(email, password);
-
-  //   const deactivatedUser = await usersService.deactivate(user.id);
-  //   expect(deactivatedUser).toBeDefined();
-  // })
+    const deactivatedUser = await usersService.deactivate(user.id);
+    expect(deactivatedUser).toBeDefined();
+  });
 });
 
-// describe('UsersService', () => {
-//   let service: UsersService;
+// fakeUserRepository = {
+//   create: jest.fn().mockImplementation((user) => {
+//     user.id = uuidv4();
+//     user.gender = 'other';
+//     user.role = 'user';
+//     return user;
+//   }),
 
-//   beforeEach(async () => {
-//     const module: TestingModule = await Test.createTestingModule({
-//       imports: [
-//         AppModule, // Add AppModule here
-//         TypeOrmModule.forFeature([User]),
-//       ],
-//       providers: [UsersService],
-//     }).compile();
+//   save: jest.fn().mockImplementation((user: User | User[]) => {
+//     if (Array.isArray(user)) {
+//       userArray.push(...user);
+//     } else {
+//       userArray.push(user);
+//     }
+//     return Promise.resolve(user);
+//   }),
 
-//     service = module.get<UsersService>(UsersService);
-//   });
+//   find: () => {
+//     return Promise.resolve(userArray);
+//   },
+//   findOne: (id) => {
+//     const foundUser = userArray.find((user) => user.id === id);
+//     return Promise.resolve(foundUser);
+//   },
+//   remove: jest.fn().mockImplementation((user: User) => {
+//     const index = userArray.findIndex((u) => u.id === user.id);
+//     if (index !== -1) {
+//       const [removedUser] = userArray.splice(index, 1);
+//       return Promise.resolve(removedUser);
+//     }
+//     return Promise.resolve(undefined);
+//   }),
 
-//   it('should be defined', () => {
-//     expect(service).toBeDefined();
-//   });
-// });
-
-////------------------////
-
-// import { Test, TestingModule } from '@nestjs/testing';
-// import { UsersService } from './users.service';
-// import { TypeOrmModule } from '@nestjs/typeorm';
-// import { User } from './entities/user.entity';
-// import { AppModule } from '../app.module'; // Import the AppModule
-
-// describe('UsersService', () => {
-//   let service: UsersService;
-
-//   beforeEach(async () => {
-//     const module: TestingModule = await Test.createTestingModule({
-//       imports: [
-//         AppModule, // Add AppModule here
-//         TypeOrmModule.forFeature([User]),
-//       ],
-//       providers: [UsersService],
-//     }).compile();
-
-//     service = module.get<UsersService>(UsersService);
-//   });
-
-//   it('should be defined', () => {
-//     expect(service).toBeDefined();
-//   });
-// });
-
-// import { Test } from '@nestjs/testing';
-// import { UsersService } from './users.service';
-// import { Repository } from 'typeorm';
-// import { User } from './entities/user.entity';
-// import { getRepositoryToken } from '@nestjs/typeorm';
-// import { NotFoundException } from '@nestjs/common';
+//   findOneBy: (options) => {
+//     const keys = Object.keys(options);
+//     const foundUser = userArray.find((user) => {
+//       return keys.every((key) => user[key] === options[key]);
+//     });
+//     return Promise.resolve(foundUser);
+//   },
+// };
 
 // describe('UsersService', () => {
 //   let usersService: UsersService;
@@ -268,65 +248,4 @@ describe('UsersService', () => {
 
 //     usersService = module.get<UsersService>(UsersService);
 //   });
-
-//   it('should be defined', () => {
-//     expect(usersService).toBeDefined();
-//   });
-
-//   it('should create a user', async () => {
-//     const email = 'test@example.com';
-//     const password = 'testpassword';
-//     const user = await usersService.create(email, password);
-
-//     expect(user.email).toBe(email);
-//     expect(user.password).toBe(password);
-//   });
-
-//   it('should find all users', async () => {
-//     const users = await usersService.findAll();
-//     expect(users.length).toBe(userArray.length);
-//   });
-
-//   it('should find one user by id', async () => {
-//     const email = 'test2@example.com';
-//     const password = 'testpassword2';
-//     const user = await usersService.create(email, password);
-
-//     const foundUser = await usersService.findOne(user.id);
-//     expect(foundUser).toBeDefined();
-//     expect(foundUser.email).toBe(email);
-//   });
-
-//   it('should update a user', async () => {
-//     const email = 'test3@example.com';
-//     const password = 'testpassword3';
-//     const user = await usersService.create(email, password);
-
-//     const newEmail = 'updatedtest@example.com';
-//     const updatedUser = await usersService.update(user.id, { email: newEmail });
-
-//     expect(updatedUser.email).toBe(newEmail);
-//   });
-
-//   it('should remove a user', async () => {
-//     const email = 'test4@example.com';
-//     const password = 'testpassword4';
-//     const user = await usersService.create(email, password);
-
-//     const removedUser = await usersService.remove(user.id);
-//     expect(removedUser).toBeDefined();
-//     expect(removedUser.email).toBe(email);
-
-//     const foundUser = await usersService.findOne(user.id);
-//     expect(foundUser).toBeUndefined();
-//   });
-
-//   it('should deactivate a user', async () => {
-//     const email = 'test5@example.com';
-//     const password = 'testpassword5';
-//     const user = await usersService.create(email, password);
-
-//     const deactivatedUser = await usersService.deactivate(user.id);
-//     expect(deactivatedUser).toBeDefined();
-//   })
 // });

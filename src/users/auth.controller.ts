@@ -40,7 +40,7 @@ import { SignupUserDto, UserSignupResponseDto } from './dtos/signup-user.dto';
 import { Response } from 'express';
 import { GoogleLoginDto } from './dtos/google-login.dto';
 
-@ApiTags('auth') // Groups endpoints under the 'users' tag in the Swagger UI
+@ApiTags('auth')
 @Serialize(UserDto)
 @Controller('auth')
 export class AuthController {
@@ -50,7 +50,11 @@ export class AuthController {
   ) {}
 
   @Post('signup')
-  @ApiOperation({ summary: 'User registration' })
+  @ApiOperation({
+    summary: 'User registration',
+    description:
+      'This endpoint allows new users to create an account. Users provide an email and password which are then stored in the database. If the operation is successful, a new JWT token is created for the user and returned in a cookie.',
+  })
   @ApiCreatedResponse({
     description: 'The user has been successfully created.',
     type: UserLoginResponseDto,
@@ -79,7 +83,11 @@ export class AuthController {
   }
 
   @Post('login')
-  @ApiOperation({ summary: 'User login' })
+  @ApiOperation({
+    summary: 'User login',
+    description:
+      "This endpoint allows existing users to authenticate with the system. Users provide their email and password, and if they match what's in the database, a new JWT token is created for the user and returned in a cookie. If the email does not exist in the database, or if the password does not match, an error message is returned.",
+  })
   @ApiOkResponse({
     description: 'Returns the user and access token',
     type: UserSignupResponseDto,
@@ -111,7 +119,11 @@ export class AuthController {
   }
 
   @Post('google-login')
-  @ApiOperation({ summary: 'Google login' })
+  @ApiOperation({
+    summary: 'Google login',
+    description:
+      "This endpoint allows users to authenticate or register using their Google account. The user provides their Google credential and if it's valid, a new JWT token is created for the user and returned in a cookie. If the user does not exist in the database, a new user is created.",
+  })
   @ApiCreatedResponse({
     description: 'The user has been successfully logged in or created.',
     type: UserLoginResponseDto,

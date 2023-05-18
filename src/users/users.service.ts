@@ -74,20 +74,3 @@ export class UsersService {
     return user;
   }
 }
-
-// async update(id: string, attrs: UpdateUserDto) {
-//   const user = await this.findOneById(id);
-//   if (!user) {
-//     throw new NotFoundException('user not found');
-//   }
-//   return this.repo.save({ ...user, ...attrs });
-// }
-
-// async updatePassword(id: string, password: string) {
-//   const user = await this.findOneById(id);
-//   if (!user) {
-//     throw new NotFoundException('user not found');
-//   }
-//   user.password = password;
-//   return this.repo.save(user);
-// }

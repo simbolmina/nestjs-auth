@@ -21,23 +21,23 @@ import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { User } from './entities/user.entity';
 import {
-  ApiCreatedResponse,
   ApiBadRequestResponse,
   ApiTags,
   ApiBearerAuth,
   ApiOperation,
   ApiParam,
   ApiQuery,
-  ApiResponse,
   ApiUnauthorizedResponse,
   ApiOkResponse,
-  ApiNotFoundResponse,
   ApiBody,
+  ApiNotFoundResponse,
+  ApiForbiddenResponse,
+  ApiNoContentResponse,
 } from '@nestjs/swagger';
 import { AdminGuard } from '../guards/admin.guard';
 import { ChangePasswordDto } from './dtos/change-password.dto';
 
-@ApiTags('users') // Groups endpoints under the 'users' tag in the Swagger UI
+@ApiTags('users')
 @Controller('users')
 export class UsersController {
   constructor(
@@ -45,29 +45,41 @@ export class UsersController {
     private authService: AuthService,
   ) {}
 
-  @UseGuards(JwtAuthGuard, new AdminGuard())
+  @UseGuards(JwtAuthGuard, AdminGuard)
   @Get()
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Get all users',
-    description: 'This endpoint is only accessible by admin users',
+    description:
+      'This endpoint retrieves all user entries from the database. Only administrators can access this endpoint to view the full list of users.',
   })
-  @ApiResponse({ status: 200, description: 'Returns all users', type: [User] })
-  findAllUsers() {
-    return this.usersService.findAll();
+  @ApiOkResponse({ description: 'Returns all users', type: [User] })
+  @ApiNotFoundResponse({ description: 'No users found' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiForbiddenResponse({ description: 'Forbidden resource' })
+  async findAllUsers() {
+    const users = await this.usersService.findAll();
+    if (!users.length) {
+      throw new NotFoundException('No users found'); // Throw NotFoundException if no users are found
+    }
+    return users;
   }
 
   @Serialize(UserDto)
   @Get('/me')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get current user' })
+  @ApiOperation({
+    summary: 'Get current user',
+    description:
+      'This endpoint returns the details of the currently authenticated user. The user must be authenticated with a valid JWT token.',
+  })
   @ApiOkResponse({
     description: 'Returns the current user',
     type: UserDto,
   })
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  whoAmI(@CurrentUser() user: User) {
+  getMe(@CurrentUser() user: User) {
     return user;
   }
 
@@ -75,7 +87,11 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @Patch('/me')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Update current user' })
+  @ApiOperation({
+    summary: 'Update current user',
+    description:
+      'This endpoint allows the currently authenticated user to update their own user details, such as name, gender, etc. Allowed fields are listed in request body example. Each field can separetly be updated, you don"t have to send whole object. The user must be authenticated with a valid JWT token.',
+  })
   @ApiOkResponse({
     description: 'Returns the updated user',
     type: UserDto,
@@ -99,8 +115,12 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @Delete('/me')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Deactivate current user' })
-  @ApiOkResponse({
+  @ApiOperation({
+    summary: 'Deactivate current user',
+    description:
+      'This endpoint allows the currently authenticated user to deactivate their account. Deactivated accounts are not deleted and can be reactivated. The user must be authenticated with a valid JWT token.',
+  })
+  @ApiNoContentResponse({
     description: 'User has been deactivated',
   })
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
@@ -111,7 +131,11 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @Patch('/me/password')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Change current user password' })
+  @ApiOperation({
+    summary: 'Change current user password',
+    description:
+      'This endpoint allows the currently authenticated user to change their password. The user must provide their current password for verification along with the new password. The user must be authenticated with a valid JWT token.',
+  })
   @ApiOkResponse({
     description: 'Password has been changed',
   })
@@ -130,17 +154,22 @@ export class UsersController {
     return this.authService.changePassword(user.id, changePasswordDto);
   }
 
-  @UseGuards(JwtAuthGuard, new AdminGuard())
+  @UseGuards(JwtAuthGuard, AdminGuard)
   @Get('/:id')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get user by ID' })
+  @ApiOperation({
+    summary: 'Get user by ID',
+    description:
+      "This endpoint retrieves the user entry with the given ID from the database. Only administrators can access this endpoint to view other users' details. Details in this api are full user details so admin can access and edit all user details.",
+  })
   @ApiParam({ name: 'id', description: 'User ID' })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Returns the user with the given ID',
     type: User,
   })
-  @ApiResponse({ status: 404, description: 'User not found' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiForbiddenResponse({ description: 'Forbidden resource' })
+  @ApiNotFoundResponse({ description: 'User not found' })
   async findUser(@Param('id') id: string) {
     const user = await this.usersService.findOneById(id);
     if (!user) {
@@ -149,41 +178,79 @@ export class UsersController {
     return user;
   }
 
-  @UseGuards(JwtAuthGuard, new AdminGuard())
+  @UseGuards(JwtAuthGuard, AdminGuard)
   @Get('/:email')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get users by email' })
-  @ApiQuery({ name: 'email', description: 'Email to search for users' })
-  @ApiResponse({
-    status: 200,
-    description: 'Returns users with the given email',
-    type: [User],
+  @ApiOperation({
+    summary: 'Get users by email',
+    description:
+      'This endpoint retrieves a user from the database that match the given email. Only administrators can access this endpoint to search for users by their email. Details in this api are full user details so admin can access and edit all user details.',
   })
-  findUsersByEmail(@Query('email') email: string) {
+  @ApiQuery({ name: 'email', description: 'Email to search for users' })
+  @ApiOkResponse({
+    description: 'Returns users with the given email',
+    type: User,
+  })
+  @ApiNotFoundResponse({ description: 'User not found' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiForbiddenResponse({ description: 'Forbidden resource' })
+  findUserByEmail(@Query('email') email: string) {
     return this.usersService.findByEmail(email);
   }
 
   // this is actually a PATCH request that sets user.active = false
-  @UseGuards(JwtAuthGuard, new AdminGuard())
+  @UseGuards(JwtAuthGuard, AdminGuard)
   @Delete('/:id')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Deactivate user by ID' })
+  @ApiOperation({
+    summary: 'Deactivate user by ID',
+    description:
+      'This endpoint allows an administrator to deactivate a user account. Deactivated accounts are not deleted and can be reactivated. Only administrators can access this endpoint.',
+  })
   @ApiParam({ name: 'id', description: 'User ID' })
-  @ApiResponse({ status: 200, description: 'User has been deactivated' })
+  @ApiNoContentResponse({ description: 'User has been deactivated' })
+  @ApiNotFoundResponse({ description: 'User not found' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiForbiddenResponse({ description: 'Forbidden resource' })
   async removeUser(@Param('id') id: string) {
     return this.usersService.deactivate(id);
   }
 
-  @UseGuards(JwtAuthGuard, new AdminGuard())
+  @UseGuards(JwtAuthGuard, AdminGuard)
   @Patch('/:id')
   @ApiBody({
     description: 'Allowed data to be updated by user',
     type: User,
   })
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Update user by ID' })
+  @ApiOkResponse({ type: User })
+  @ApiOperation({
+    summary: 'Update user by ID',
+    description:
+      'This endpoint allows an administrator to update user details for any user in the database. Only administrators can access this endpoint.',
+  })
+  @ApiNotFoundResponse({ description: 'User not found' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiForbiddenResponse({ description: 'Forbidden resource' })
   @ApiParam({ name: 'id', description: 'User ID' })
   updateUser(@Param('id') id: string, @Body() body: Partial<User>) {
     return this.usersService.update(id, body);
+  }
+
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @Delete('/:id/delete')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Delete user by ID',
+    description:
+      'This endpoint allows an administrator to permanently delete a user account from the database. This operation cannot be undone. Only administrators can access this endpoint.',
+  })
+  @ApiParam({ name: 'id', description: 'User ID' })
+  @ApiNoContentResponse({ description: 'User has been deleted' })
+  @ApiNotFoundResponse({ description: 'User not found' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiForbiddenResponse({ description: 'Forbidden resource' })
+  async deleteUser(@Param('id') id: string) {
+    return this.usersService.remove(id);
   }
 }
