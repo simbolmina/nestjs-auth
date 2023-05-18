@@ -11,7 +11,7 @@ Before you begin, you will need to have the following installed on your machine:
 1. [Node.js](https://nodejs.org/) (v14.x or higher)
 2. [npm](https://www.npmjs.com/) (v6.x or higher)
 3. [PostgreSQL](https://www.postgresql.org/download/) (v10.x or higher)
-4. (Optional) [PgAdmin](https://www.pgadmin.org/download/) - a GUI tool for managing PostgreSQL databases
+4. [PgAdmin](https://www.pgadmin.org/download/) - a GUI tool for managing PostgreSQL databases
 5. Create two databases with PgAdmin as `development` and `test`
 
 ### Installation
@@ -83,7 +83,45 @@ For an example in action, check out this video: [https://www.youtube.com/watch?v
 
 ## API Documentation
 
-API documentation is provided through the Swagger UI, which can be accessed at [http://localhost:3000/api-doc](http://localhost:3000/api-doc). For some examples, check out this video: [https://www.youtube.com/watch?v=lZmsY0e2ojQ](https://www.youtube.com/watch?v=lZmsY0e2ojQ).
+API documentation is provided through the Swagger UI, which can be accessed at [http://localhost:5000/api-doc](http://localhost:5000/api-doc). For some examples, check out this video: [https://www.youtube.com/watch?v=lZmsY0e2ojQ](https://www.youtube.com/watch?v=lZmsY0e2ojQ).
+
+The API documentation is automatically generated using Swagger decorators in each endpoint. These decorators enhance the auto-generated Swagger documentation by adding descriptions, potential response codes, and response types. For instance, in the `updateUser` endpoint:
+
+```typescript
+@UseGuards(JwtAuthGuard, AdminGuard)
+@Patch('/:id')
+@ApiBody({
+  description: 'Allowed data to be updated by user',
+  type: AdminUpdateUserDto,
+})
+@ApiBearerAuth()
+@ApiOkResponse({ type: User })
+@ApiOperation({
+  summary: 'Update user by ID',
+  description:
+    'This endpoint allows an administrator to update user details for any user in the database. Only administrators can access this endpoint.',
+})
+@ApiNotFoundResponse({ description: 'User not found' })
+@ApiUnauthorizedResponse({ description: 'Unauthorized' })
+@ApiForbiddenResponse({ description: 'Forbidden resource' })
+@ApiParam({ name: 'id', description: 'User ID' })
+async updateUser(@Param('id') id: string, @Body() body: Partial<User>) {
+  return await this.usersService.updateUserByAdmin(id, body);
+}
+```
+
+This code snippet includes various decorators from the `nestjs/swagger` package:
+
+- `@ApiBody` is used to describe the request body.
+- `@ApiOperation` provides summary and description for the API operation.
+- `@ApiOkResponse` describes a possible successful response, including its data type.
+- `@ApiParam` describes a URL parameter.
+- `@ApiBearerAuth` indicates that this route requires bearer token authentication.
+- `@ApiNotFoundResponse`, `@ApiUnauthorizedResponse`, and `@ApiForbiddenResponse` provide descriptions of possible error responses.
+
+When you run the application, NestJS will automatically generate an OpenAPI (Swagger) specification. You can see this in action by navigating to `http://localhost:5000/api-doc` where you'll find the Swagger UI presenting all your endpoints and their descriptions interactively.
+
+Remember that having a well-documented API is vital for both front-end developers and other potential users of your API. You should always try to make your API self-descriptive.
 
 ### .env Configuration
 
