@@ -6,6 +6,7 @@ import {
   TypeOrmHealthIndicator,
   HttpHealthIndicator,
 } from '@nestjs/terminus';
+import { AppInfoDto } from './dtos/app-info.dto';
 
 describe('AppController', () => {
   let appController: AppController;
@@ -49,24 +50,22 @@ describe('AppController', () => {
 
   describe('getAppInfo', () => {
     it('should return app information', () => {
-      const result = {
+      const result: AppInfoDto = {
         name: 'Pazareo APIs',
         version: '0.3.0',
         description: 'This is pazareo API built with NestJS',
-        clients: {
-          web: {
-            version: '0.3.0',
+        web: {
+          version: '0.4.0',
+          lastUpdate: '2023-05-15',
+        },
+        mobile: {
+          ios: {
+            version: '0.2.0',
             lastUpdate: '2023-05-15',
           },
-          mobile: {
-            ios: {
-              version: '0.3.0',
-              lastUpdate: '2023-05-15',
-            },
-            android: {
-              version: '0.3.0',
-              lastUpdate: '2023-05-15',
-            },
+          android: {
+            version: '0.2.0',
+            lastUpdate: '2023-05-15',
           },
         },
       };

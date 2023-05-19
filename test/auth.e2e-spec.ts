@@ -17,15 +17,6 @@ describe('Authentication System (e2e)', () => {
     await app.init();
   });
 
-  // beforeEach(async () => {
-  //   // Get the connection and drop all tables
-  //   const connection = getConnection();
-  //   await connection.dropDatabase();
-
-  //   // Or clear all entities from the database
-  //   await connection.manager.clear(User);
-  // });
-
   afterAll(async () => {
     await app.close();
   });

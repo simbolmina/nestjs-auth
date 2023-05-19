@@ -24,6 +24,10 @@ export class UserLoginResponseDto {
   @ApiProperty({ type: () => UserDto })
   data: UserDto;
 
-  @ApiProperty()
+  @ApiProperty({
+    description: 'The JWT token to include in the header of future requests',
+    example:
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5NTEwMGUzZi0xMmYxLTQxN2UtYjg4ZC04NTJmN2QwZTAxOGYiLCJlbWFpbCI6ImFkbWluQGVtYWlsLmNvbSIsImlhdCI6MTY4NDQxMDc1OCwiZXhwIjoxNjkyMTg2NzU4fQ.yy5gvPs6QB7bQWabZaaugYrNYeR6IVDN-OYpI_i0Pus',
+  })
   token: string;
 }

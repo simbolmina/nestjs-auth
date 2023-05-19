@@ -17,7 +17,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Address } from '../../addresses/entities/address.entity';
 import { Cart } from '../../cart/entities/cart.entity';
 import { Wishlist } from '../../wishlists/entities/wishlist.entity';
-import { Review } from 'src/reviews/entities/review.entity';
+import { Review } from '../../reviews/entities/review.entity';
 
 @Entity('users')
 @Index(['googleId', 'email', 'id'], { unique: true })

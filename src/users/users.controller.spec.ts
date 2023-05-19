@@ -7,9 +7,11 @@ import { SerializeInterceptor } from '../interceptors/serialize.interceptor';
 import { NotFoundException } from '@nestjs/common';
 import { UserDto } from './dtos/user.dto';
 import { Response } from 'express';
+import { AuthController } from './auth.controller';
 
 describe('UsersController', () => {
-  let controller: UsersController;
+  let usersController: UsersController;
+  let authController: AuthController;
   let fakeUsersService: Partial<UsersService>;
   let fakeAuthService: Partial<AuthService>;
 
@@ -20,17 +22,19 @@ describe('UsersController', () => {
           { id: '1', email: 'test@test.com', password: 'test' } as User,
         ]);
       },
-      findOne: (id: string) => {
+      findOneById: (id: string) => {
         return Promise.resolve({
           id,
           email: 'test@test.com',
           password: 'test',
         } as User);
       },
-      find: (email: string) => {
-        return Promise.resolve([
-          { id: '1', email, password: 'password' } as User,
-        ]);
+      findByEmail: (email: string) => {
+        return Promise.resolve({
+          id: '1',
+          email,
+          password: 'password',
+        } as User);
       },
       remove: (id: string) => {
         return Promise.resolve({
@@ -39,12 +43,20 @@ describe('UsersController', () => {
           password: 'test',
         } as User);
       },
-      update: (id: string, attrs: Partial<User>) => {
+      updateCurrentUser: (id: string, attrs: Partial<User>) => {
         return Promise.resolve({
           id,
           email: 'test@test.com',
           password: 'test',
           ...attrs,
+        } as User);
+      },
+      deactivate: (id: string) => {
+        return Promise.resolve({
+          id,
+          email: 'test@test.com',
+          password: 'test',
+          active: false,
         } as User);
       },
     };
@@ -62,7 +74,7 @@ describe('UsersController', () => {
       },
     };
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [UsersController],
+      controllers: [UsersController, AuthController],
       providers: [
         {
           provide: UsersService,
@@ -79,33 +91,36 @@ describe('UsersController', () => {
       ],
     }).compile();
 
-    controller = module.get<UsersController>(UsersController);
+    usersController = module.get<UsersController>(UsersController);
+    authController = module.get<AuthController>(AuthController);
   });
 
   it('should be defined', () => {
-    expect(controller).toBeDefined();
+    expect(usersController).toBeDefined();
   });
 
   it('findUser returns a single user with given id', async () => {
-    const user = await controller.findUser('1');
+    const user = await usersController.findUser('1');
     expect(user).toBeDefined();
   });
 
   it('findUser throws an error if user with given id is not found', async () => {
-    fakeUsersService.findOne = () => null;
-    await expect(controller.findUser('1')).rejects.toThrow(NotFoundException);
+    fakeUsersService.findOneById = () => null;
+    await expect(usersController.findUser('1')).rejects.toThrow(
+      NotFoundException,
+    );
   });
 
   it('findAllUsers returns all users', async () => {
-    await expect(controller.findAllUsers()).resolves.toEqual([
+    await expect(usersController.findAllUsers()).resolves.toEqual([
       { id: '1', email: 'test@test.com', password: 'test' } as User,
     ]);
   });
 
   it('findUsersByEmail returns a list of users with given email', async () => {
-    const users = await controller.findUsersByEmail('test@test.com');
-    expect(users.length).toEqual(1);
-    expect(users[0].email).toEqual('test@test.com');
+    const user = await usersController.findUserByEmail('test@test.com');
+    //expect(users).toEqual(1);
+    expect(user.email).toEqual('test@test.com');
   });
 
   // it('signin returns user and token', async () => {
@@ -125,7 +140,7 @@ describe('UsersController', () => {
       json: function () {},
     } as unknown as Response;
 
-    const { data, token } = await controller.signin(
+    const { data, token } = await authController.signin(
       { email: 'test@test.com', password: 'test' },
       mockResponse,
     );
@@ -136,5 +151,18 @@ describe('UsersController', () => {
       httpOnly: true,
       maxAge: 72 * 60 * 60 * 1000,
     });
+  });
+
+  it('removeUser deactivates user and returns user', async () => {
+    const user = await usersController.removeUser('1');
+    expect(user).toBeDefined();
+    expect(user.active).toEqual(false);
+  });
+
+  it('removeUser throws an error if user is not found', async () => {
+    fakeUsersService.deactivate = () => Promise.reject(new NotFoundException());
+    await expect(usersController.removeUser('nonexistent')).rejects.toThrow(
+      NotFoundException,
+    );
   });
 });

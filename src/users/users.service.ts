@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { UpdateUserDto } from './dtos/update-user.dto';
+import { AdminUpdateUserDto, UpdateUserDto } from './dtos/update-user.dto';
 
 export type GoogleProfile = {
   email: string;
@@ -47,7 +47,15 @@ export class UsersService {
     return this.repo.save(user);
   }
 
-  async update(id: string, attrs: UpdateUserDto) {
+  async updateCurrentUser(id: string, attrs: Partial<UpdateUserDto>) {
+    const user = await this.repo.preload({ id, ...attrs });
+    if (!user) {
+      throw new NotFoundException('user not found');
+    }
+    return this.repo.save(user);
+  }
+
+  async updateUserByAdmin(id: string, attrs: Partial<AdminUpdateUserDto>) {
     const user = await this.repo.preload({ id, ...attrs });
     if (!user) {
       throw new NotFoundException('user not found');
@@ -63,15 +71,6 @@ export class UsersService {
     return this.repo.remove(user);
   }
 
-  async updatePassword(id: string, password: string) {
-    const user = await this.findOneById(id);
-    if (!user) {
-      throw new NotFoundException('user not found');
-    }
-    user.password = password;
-    return this.repo.save(user);
-  }
-
   async deactivate(id: string): Promise<User> {
     const user = await this.repo.findOne({ where: { id } });
     if (!user) {
@@ -83,11 +82,3 @@ export class UsersService {
     return user;
   }
 }
-
-// async update(id: string, attrs: UpdateUserDto) {
-//   const user = await this.findOneById(id);
-//   if (!user) {
-//     throw new NotFoundException('user not found');
-//   }
-//   return this.repo.save({ ...user, ...attrs });
-// }
