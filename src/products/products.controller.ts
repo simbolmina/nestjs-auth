@@ -132,6 +132,7 @@ export class ProductsController {
     description: 'The product has been successfully fetched.',
     type: ProductDetailsDto,
   })
+  @Serialize(ProductDetailsDto)
   @ApiNotFoundResponse({ description: 'Product not found.' })
   @Get('id/:id')
   findOneById(@Param('id') id: string) {
