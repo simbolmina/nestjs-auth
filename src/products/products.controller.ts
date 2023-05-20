@@ -33,6 +33,7 @@ import {
   ApiOperation,
   ApiQuery,
   ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { GetProductsDto } from './dto/get-product.dto';
 import { ProductDetailsDto } from './dto/product-details.dto';
@@ -82,6 +83,7 @@ export class ProductsController {
   @ApiNotFoundResponse({
     description: 'The product with the provided id could not be found.',
   })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized.' })
   @Patch(':id/status')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, AdminGuard)
@@ -167,10 +169,11 @@ export class ProductsController {
     type: ProductDetailsDto,
   })
   @Serialize(ProductDetailsDto)
-  @ApiNotFoundResponse({ description: 'Product not found.' })
   @ApiNotFoundResponse({
     description: 'A product with the provided ID could not be found.',
   })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized.' })
+  @ApiForbiddenResponse({ description: 'Forbidden.' })
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, AdminGuard)
   @Get('id/:id')
