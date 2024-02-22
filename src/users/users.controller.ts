@@ -198,24 +198,6 @@ export class UsersController {
     return await this.usersService.findByEmail(email);
   }
 
-  // this is actually a PATCH request that sets user.active = false
-  @UseGuards(JwtAuthGuard, AdminGuard)
-  @Delete('/:id')
-  @ApiBearerAuth()
-  @ApiOperation({
-    summary: 'Deactivate user by ID',
-    description:
-      'This endpoint allows an administrator to deactivate a user account. Deactivated accounts are not deleted and can be reactivated. Only administrators can access this endpoint.',
-  })
-  @ApiParam({ name: 'id', description: 'User ID' })
-  @ApiNoContentResponse({ description: 'User has been deactivated' })
-  @ApiNotFoundResponse({ description: 'User not found' })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  @ApiForbiddenResponse({ description: 'Forbidden resource' })
-  async removeUser(@Param('id') id: string) {
-    return this.usersService.deactivate(id);
-  }
-
   @UseGuards(JwtAuthGuard, AdminGuard)
   @Patch('/:id')
   @ApiBody({
@@ -235,6 +217,24 @@ export class UsersController {
   @ApiParam({ name: 'id', description: 'User ID' })
   async updateUser(@Param('id') id: string, @Body() body: Partial<User>) {
     return await this.usersService.updateUserByAdmin(id, body);
+  }
+
+  // this is actually a PATCH request that sets user.active = false
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @Delete('/:id')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Deactivate user by ID',
+    description:
+      'This endpoint allows an administrator to deactivate a user account. Deactivated accounts are not deleted and can be reactivated. Only administrators can access this endpoint.',
+  })
+  @ApiParam({ name: 'id', description: 'User ID' })
+  @ApiNoContentResponse({ description: 'User has been deactivated' })
+  @ApiNotFoundResponse({ description: 'User not found' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiForbiddenResponse({ description: 'Forbidden resource' })
+  async removeUser(@Param('id') id: string) {
+    return this.usersService.deactivate(id);
   }
 
   @UseGuards(JwtAuthGuard, AdminGuard)

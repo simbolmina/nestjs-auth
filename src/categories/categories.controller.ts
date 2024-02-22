@@ -49,8 +49,8 @@ export class CategoriesController {
   @ApiBadRequestResponse({ description: 'Invalid data input.' })
   @ApiUnauthorizedResponse({ description: 'Unauthorized.' })
   @ApiForbiddenResponse({ description: 'Forbidden.' })
-  create(@Body() createCategoryDto: CreateCategoryDto) {
-    return this.categoriesService.create(createCategoryDto);
+  create(@Body() body: CreateCategoryDto) {
+    return this.categoriesService.create(body);
   }
 
   @Get()

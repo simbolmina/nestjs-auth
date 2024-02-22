@@ -26,7 +26,7 @@ export class AuthController {
     private authService: AuthService,
   ) {}
 
-  @Post('signup')
+  @Post('register')
   @ApiOperation({
     summary: 'User registration',
     description:
@@ -51,10 +51,10 @@ export class AuthController {
       body.password,
     );
 
-    res.cookie('auth_token', token, {
-      httpOnly: true,
-      maxAge: 72 * 60 * 60 * 1000,
-    });
+    // res.cookie('auth_token', token, {
+    //   httpOnly: true,
+    //   maxAge: 72 * 60 * 60 * 1000,
+    // });
 
     return { data, token };
   }

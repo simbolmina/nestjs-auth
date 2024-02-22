@@ -16,11 +16,11 @@ import { GetProductsDto } from './dto/get-product.dto';
 @Injectable()
 export class ProductsService {
   constructor(@InjectRepository(Product) private repo: Repository<Product>) {}
-  async create(productDto: CreateProductDto, user: User) {
-    const product = this.repo.create(productDto);
+  async create(body: CreateProductDto, user: User) {
+    const product = this.repo.create(body);
     product.seller = user;
-    product.category = productDto.categoryId;
-    product.brand = productDto.brandId;
+    product.category = body.categoryId;
+    product.brand = body.brandId;
     return await this.repo.save(product);
   }
 
