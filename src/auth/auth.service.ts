@@ -4,13 +4,13 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { GoogleProfile, UsersService } from './users.service';
+import { GoogleProfile, UsersService } from '../users/users.service';
 import { randomBytes, scrypt as _scrypt } from 'crypto';
 import { promisify } from 'util';
 import { JwtService } from '@nestjs/jwt';
-import { User } from './entities/user.entity';
+import { User } from '../users/entities/user.entity';
 import { OAuth2Client } from 'google-auth-library';
-import { ChangePasswordDto } from './dtos/change-password.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 //scrypt is async by nature and required to use as a callback. we dont want to use callback so we use primisify to make it a promise
 const scrypt = promisify(_scrypt);
@@ -54,7 +54,6 @@ export class AuthService {
     const payload = { sub: createdUser.id, email: createdUser.email };
 
     return {
-      data: createdUser,
       token: this.jwtService.sign(payload),
     };
   }
@@ -78,8 +77,8 @@ export class AuthService {
     }
 
     const payload = { sub: user.id, email: user.email };
+
     return {
-      data: user,
       token: this.jwtService.sign(payload),
     };
   }
@@ -112,7 +111,6 @@ export class AuthService {
     const jwtPayload = { sub: user.id, email: user.email };
 
     return {
-      data: user,
       token: this.jwtService.sign(jwtPayload),
     };
   }

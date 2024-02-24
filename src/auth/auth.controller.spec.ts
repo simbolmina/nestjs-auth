@@ -1,16 +1,16 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { UsersService } from './users.service';
-import { JwtStrategy } from './strategies/jwt.strategy';
+import { UsersService } from '../users/users.service';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
-import { User } from './entities/user.entity';
+import { User } from '../users/entities/user.entity';
 import { Repository } from 'typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
-import { UsersController } from './users.controller';
+import { UsersController } from '../users/users.controller';
 import { v4 as uuidv4 } from 'uuid';
+import { JwtStrategy } from './strategies/jwt.strategy';
 
 describe('AuthController', () => {
   let authController: AuthController;

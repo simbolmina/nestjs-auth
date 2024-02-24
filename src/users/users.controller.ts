@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  Post,
   Get,
   Patch,
   Param,
@@ -9,14 +8,11 @@ import {
   Delete,
   NotFoundException,
   UseGuards,
-  Res,
-  Req,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { AdminUpdateUserDto, UpdateUserDto } from './dtos/update-user.dto';
 import { UserDto } from './dtos/user.dto';
 import { Serialize } from '../interceptors/serialize.interceptor';
-import { AuthService } from './auth.service';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { User } from './entities/user.entity';
@@ -35,15 +31,11 @@ import {
   ApiNoContentResponse,
 } from '@nestjs/swagger';
 import { AdminGuard } from '../guards/admin.guard';
-import { ChangePasswordDto } from './dtos/change-password.dto';
 
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
-  constructor(
-    private usersService: UsersService,
-    private authService: AuthService,
-  ) {}
+  constructor(private usersService: UsersService) {}
 
   @UseGuards(JwtAuthGuard, AdminGuard)
   @Get()
@@ -126,32 +118,6 @@ export class UsersController {
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   async removeCurrentUser(@CurrentUser() user: User) {
     return await this.usersService.deactivate(user.id);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Patch('/me/password')
-  @ApiBearerAuth()
-  @ApiOperation({
-    summary: 'Change current user password',
-    description:
-      'This endpoint allows the currently authenticated user to change their password. The user must provide their current password for verification along with the new password. The user must be authenticated with a valid JWT token.',
-  })
-  @ApiOkResponse({
-    description: 'Password has been changed',
-  })
-  @ApiBadRequestResponse({
-    description: 'Invalid data provided',
-  })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  @ApiBody({
-    description: 'Password change data',
-    type: ChangePasswordDto,
-  })
-  async changeMyPassword(
-    @CurrentUser() user: User,
-    @Body() changePasswordDto: ChangePasswordDto,
-  ) {
-    return this.authService.changePassword(user.id, changePasswordDto);
   }
 
   @UseGuards(JwtAuthGuard, AdminGuard)

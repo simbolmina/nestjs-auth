@@ -3,6 +3,7 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { AdminUpdateUserDto, UpdateUserDto } from './dtos/update-user.dto';
+import { EventEmitter2 } from 'eventemitter2';
 
 export type GoogleProfile = {
   email: string;
@@ -16,12 +17,21 @@ export type GoogleProfile = {
 
 @Injectable()
 export class UsersService {
+  private readonly _onUserCreated = new EventEmitter2();
+
   constructor(@InjectRepository(User) private repo: Repository<User>) {}
+
+  get onUserCreated() {
+    return this._onUserCreated;
+  }
 
   async create(email: string, password: string) {
     const user = this.repo.create({ email, password });
-    return await this.repo.save(user);
+    const savedUser = await this.repo.save(user);
+    this._onUserCreated.emit('user.created', savedUser.id); // Emit after save
+    return savedUser;
   }
+
   async findAll() {
     return await this.repo.find();
   }

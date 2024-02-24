@@ -1,16 +1,16 @@
 import { Test } from '@nestjs/testing';
 import { AuthService } from './auth.service';
-import { UsersService } from './users.service';
+import { UsersService } from '../users/users.service';
 import { JwtModule } from '@nestjs/jwt';
-import { User } from './entities/user.entity';
+import { User } from '../users/entities/user.entity';
 import {
   BadRequestException,
   NotFoundException,
   ForbiddenException,
 } from '@nestjs/common';
-import { ChangePasswordDto } from './dtos/change-password.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { UpdateUserDto } from './dtos/update-user.dto';
+import { UpdateUserDto } from '../users/dtos/update-user.dto';
 
 const mockVerifyIdToken = jest.fn();
 

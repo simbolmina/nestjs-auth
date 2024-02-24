@@ -1,13 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
-import { AuthService } from './auth.service';
+import { AuthService } from '../auth/auth.service';
 import { User } from './entities/user.entity';
 import { SerializeInterceptor } from '../interceptors/serialize.interceptor';
 import { NotFoundException } from '@nestjs/common';
 import { UserDto } from './dtos/user.dto';
 import { Response } from 'express';
-import { AuthController } from './auth.controller';
+import { AuthController } from '../auth/auth.controller';
 
 describe('UsersController', () => {
   let usersController: UsersController;

@@ -18,6 +18,11 @@ import { VariantsModule } from './variants/variants.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { TerminusModule } from '@nestjs/terminus';
 import { HttpModule } from '@nestjs/axios';
+import { AuthModule } from './auth/auth.module';
+import { NotificationsModule } from './notifications/notifications.module';
+import { CommonModule } from './common/common.module';
+import { ProfilesModule } from './profiles/profiles.module';
+import { EventsModule } from './events/events.module';
 
 @Module({
   imports: [
@@ -37,6 +42,11 @@ import { HttpModule } from '@nestjs/axios';
     ReviewsModule,
     TerminusModule,
     HttpModule,
+    AuthModule,
+    NotificationsModule,
+    CommonModule,
+    ProfilesModule,
+    EventsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

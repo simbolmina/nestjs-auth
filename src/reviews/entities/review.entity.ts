@@ -1,7 +1,5 @@
-// review.entity.ts
-import { User } from '../../users/entities/user.entity';
-import { Product } from '../../products/entities/product.entity';
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { Profile } from 'src/profiles/entities/profile.entity';
 
 @Entity('reviews')
 export class Review {
@@ -14,6 +12,6 @@ export class Review {
   @Column()
   content: string;
 
-  @ManyToOne(() => User, (user) => user.reviews)
-  user: Product;
+  @ManyToOne(() => Profile, (profile) => profile.reviews)
+  profile: Profile;
 }
