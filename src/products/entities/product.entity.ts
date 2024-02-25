@@ -13,6 +13,7 @@ import {
   BeforeUpdate,
   ManyToMany,
   JoinTable,
+  JoinColumn,
 } from 'typeorm';
 import {
   IsNotEmpty,
@@ -38,35 +39,51 @@ export class Product {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @ManyToOne(() => User, (user) => user.products, {
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'ownerId' })
+  owner: User;
+
+  @ManyToOne(() => Brand, (brand) => brand.products, {
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'brandId' })
+  brand: Brand;
+
+  @ManyToOne(() => Category, (category) => category.products, {
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'categoryId' })
+  category: Category;
+
+  @Column()
+  ownerId: string;
+
+  @Column()
+  brandId: string;
+
+  @Column()
+  categoryId: string;
+
+  @ManyToMany(() => Attachment, (attachment) => attachment.products, {
+    cascade: true,
+  })
+  @JoinTable({ name: 'productAttachments' })
+  attachments: Attachment[];
+
+  @ManyToMany(() => Variant, { cascade: true })
+  @JoinTable({ name: 'productVariants' })
+  variants: Variant[];
+
   @ApiProperty({ description: 'The name of the product.' })
   @IsNotEmpty({ message: 'Product name must not be empty.' })
   @MaxLength(200, { message: 'Product name must not exceed 200 characters.' })
   @Column({ nullable: false })
   name: string;
-
-  //relations start
-  @ManyToOne(() => User, (user) => user.products)
-  @ApiProperty({ description: 'The seller of the product.' })
-  seller: User;
-
-  @ManyToOne(() => Category, (category) => category.products)
-  @ApiProperty({ description: 'The category of the product.' })
-  category: Category;
-
-  @ManyToOne(() => Brand, (brand) => brand.products)
-  @ApiProperty({ description: 'The brand of the product.' })
-  brand: Brand;
-
-  @ManyToMany(() => Attachment, (attachment) => attachment.products)
-  @JoinTable({ name: 'productAttachments' })
-  @ApiProperty({ description: 'Attachments related to the product.' })
-  attachments: Attachment[];
-
-  @ManyToMany(() => Variant)
-  @JoinTable({ name: 'productVariants' })
-  @ApiProperty({ description: 'Variants of the product.' })
-  variants: Variant[];
-  //relations end
 
   @ApiProperty({ description: 'The URL-friendly identifier of the product.' })
   @IsNotEmpty({ message: 'Slug must not be empty.' })
@@ -92,13 +109,30 @@ export class Product {
   @IsNumber()
   @Min(0, { message: 'Sale price must be a positive number.' })
   @Column({ nullable: true, type: 'decimal' })
-  salePrice: number;
+  discountPrice: number;
+
+  // @ApiProperty({ description: 'The sale price of the product.' })
+  // @IsOptional()
+  // @IsNumber()
+  // @Min(0, { message: 'Sale price must be a positive number.' })
+  // @Column({ nullable: true, type: 'decimal' })
+  // finalPrice: number;
 
   @ApiProperty({ description: 'The quantity of the product.' })
   @IsNumber()
   @IsPositive({ message: 'Quantity must be a positive number.' })
   @Column({ nullable: true, default: 1 })
   quantity: number;
+
+  @ApiProperty({ description: 'The status of the product quality.' })
+  @IsEnum(['used', 'new'])
+  @Column({
+    nullable: true,
+    type: 'enum',
+    enum: ['used', 'new'],
+    default: 'used',
+  })
+  quality: string;
 
   @ApiProperty({ description: 'The status of the product.' })
   @IsEnum([
@@ -125,6 +159,7 @@ export class Product {
     default: 'draft',
   })
   status: string;
+
   @ApiProperty({ description: 'The tags associated with the product.' })
   @IsArray()
   @ArrayNotEmpty({ message: 'Tags must not be empty.' })

@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, PartialType } from '@nestjs/swagger';
 import {
   IsNotEmpty,
   IsString,
@@ -15,6 +15,7 @@ import {
 } from 'class-validator';
 import { Brand } from '../../brands/entities/brand.entity';
 import { Category } from '../../categories/entities/category.entity';
+import { CreateProductDto } from './create-product.dto';
 
 enum ProductStatus {
   Draft = 'draft',
@@ -52,75 +53,4 @@ function IsLessThan(property: string, validationOptions?: ValidationOptions) {
   };
 }
 
-export class UpdateProductDto {
-  @ApiProperty()
-  @IsOptional()
-  @IsString()
-  name: string;
-
-  @ApiProperty()
-  @IsOptional()
-  @IsString()
-  slug: string;
-
-  @ApiProperty()
-  @IsOptional()
-  @IsString()
-  description: string;
-
-  @ApiProperty({
-    example: '60a7b4b3-0b0a-4b4e-8b7a-5b0b2d7b0b2d',
-  })
-  @IsNotEmpty()
-  @IsString()
-  @IsUUID()
-  categoryId: Category;
-
-  @ApiProperty({
-    example: '60a7b4b3-0b0a-4b4e-8b7a-5b0b2d7b0b2d',
-  })
-  @IsNotEmpty()
-  @IsString()
-  @IsUUID()
-  brandId: Brand;
-
-  @ApiProperty()
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  price: number;
-
-  @ApiProperty({
-    default: 1,
-  })
-  @IsOptional()
-  @IsNumber()
-  quantity: number;
-
-  @ApiProperty()
-  @IsOptional()
-  @IsEnum(ProductStatus)
-  status: string;
-
-  @ApiProperty()
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  tags: string[];
-
-  @ApiProperty()
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  meta: string[];
-
-  @ApiProperty()
-  @IsOptional()
-  @IsBoolean()
-  isFeatured: boolean;
-
-  @ApiProperty()
-  @IsOptional()
-  @IsBoolean()
-  isOnSale: boolean;
-}
+export class UpdateProductDto extends PartialType(CreateProductDto) {}

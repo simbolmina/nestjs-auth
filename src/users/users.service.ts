@@ -91,4 +91,8 @@ export class UsersService {
     await this.repo.save(user);
     return user;
   }
+
+  async findByResetToken(passwordResetCode: string): Promise<User | null> {
+    return await this.repo.findOneBy({ passwordResetCode });
+  }
 }

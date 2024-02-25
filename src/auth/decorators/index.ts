@@ -14,6 +14,10 @@ import { UserLoginResponseDto } from '../dto/login-user.dto';
 import { UserSignupResponseDto } from '../dto/signup-user.dto';
 import { ChangePasswordDto } from '../dto/change-password.dto';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
+import { commonErrorResponses } from 'src/common/constants';
+import { ForgotPasswordDto } from '../dto/forgot-password.dto';
+import { ResetPasswordDto } from '../dto/reset-password.dto';
+import { AuthenticatedResponseDto } from '../dto/auth-response.dto';
 
 export function RegisterUsersDecorator() {
   return applyDecorators(
@@ -46,12 +50,8 @@ export function LoginUsersDecorator() {
       description: 'Returns the user and access token',
       type: UserSignupResponseDto,
     }),
-    ApiBadRequestResponse({
-      description: 'Wrong email or password',
-    }),
-    ApiNotFoundResponse({
-      description: 'User not found',
-    }),
+    ApiBadRequestResponse(commonErrorResponses.badRequest),
+    ApiNotFoundResponse(commonErrorResponses.notFound),
     ApiForbiddenResponse({
       description: 'User is registered through Google',
     }),
@@ -69,9 +69,7 @@ export function GoogleLoginDecorator() {
       description: 'The user has been successfully logged in or created.',
       type: UserLoginResponseDto,
     }),
-    ApiBadRequestResponse({
-      description: 'Invalid data provided',
-    }),
+    ApiBadRequestResponse(commonErrorResponses.badRequest),
   );
 }
 
@@ -86,14 +84,38 @@ export function ChangePasswordDecorator() {
     ApiOkResponse({
       description: 'Password has been changed',
     }),
-    ApiBadRequestResponse({
-      description: 'Invalid data provided',
-    }),
+    ApiBadRequestResponse(commonErrorResponses.badRequest),
     ApiUnauthorizedResponse({ description: 'Unauthorized' }),
     ApiBody({
       description: 'Password change data',
       type: ChangePasswordDto,
     }),
     UseGuards(JwtAuthGuard),
+  );
+}
+
+export function ForgotPasswordDecorator() {
+  return applyDecorators(
+    ApiOperation({ summary: 'Request a password reset link' }),
+    ApiBody({ type: ForgotPasswordDto, description: 'Email' }),
+    ApiOkResponse(),
+    ApiBadRequestResponse(commonErrorResponses.badRequest),
+    ApiNotFoundResponse(commonErrorResponses.notFound),
+  );
+}
+
+export function ResetPasswordDecorator() {
+  return applyDecorators(
+    ApiOperation({ summary: 'Reset the password using reset token' }),
+    ApiBody({
+      type: ResetPasswordDto,
+      description: 'Reset Token and New Password',
+    }),
+    ApiCreatedResponse({
+      description:
+        "Returns tokens and account/profile statuses if user's email is not verified and profile is not completed and approved",
+      type: AuthenticatedResponseDto,
+    }),
+    ApiNotFoundResponse(commonErrorResponses.invalidKey),
   );
 }

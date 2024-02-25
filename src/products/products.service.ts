@@ -12,32 +12,56 @@ import { User } from '../users/entities/user.entity';
 import { ChangeProductStatusDto } from './dto/change-product-status.dto';
 import { GetFeaturedProductdDto } from './dto/get-featured-product.dto';
 import { GetProductsDto } from './dto/get-product.dto';
+import { Category } from 'src/categories/entities/category.entity';
+import { Brand } from 'src/brands/entities/brand.entity';
 
 @Injectable()
 export class ProductsService {
-  constructor(@InjectRepository(Product) private repo: Repository<Product>) {}
-  async create(body: CreateProductDto, user: User) {
-    const product = this.repo.create(body);
-    product.seller = user;
-    product.category = body.categoryId;
-    product.brand = body.brandId;
-    return await this.repo.save(product);
+  constructor(
+    @InjectRepository(Product) private productRepository: Repository<Product>,
+    @InjectRepository(Brand) private brandRepository: Repository<Brand>,
+    @InjectRepository(Category)
+    private categoryRepository: Repository<Category>,
+  ) {}
+
+  async create(body: CreateProductDto, user: User): Promise<Product> {
+    // Use the correct repositories for Brand and Category
+    const brand = await this.brandRepository.findOne({
+      where: { id: body.brandId },
+    });
+    const category = await this.categoryRepository.findOne({
+      where: { id: body.categoryId },
+    });
+
+    if (!category || !brand) {
+      throw new NotFoundException('Brand or Category not found');
+    }
+
+    // Create the product without brandId and categoryId from the DTO
+    const product = this.productRepository.create({
+      ...body,
+      owner: user,
+      brand: brand,
+      category: category,
+    });
+
+    return await this.productRepository.save(product);
   }
 
   async changeStatus(id: string, body: ChangeProductStatusDto) {
-    const product = await this.repo.findOneBy({ id });
+    const product = await this.productRepository.findOneBy({ id });
     if (!product) {
       throw new NotFoundException('Product not found');
     }
     product.status = body.status;
-    return this.repo.save(product);
+    return this.productRepository.save(product);
   }
 
   async findAll(query: GetProductsDto) {
     const { page = 1, limit = 10 } = query;
     const skip = (page - 1) * limit;
 
-    const [data, total] = await this.repo.findAndCount({
+    const [data, total] = await this.productRepository.findAndCount({
       skip: skip,
       take: limit,
     });
@@ -52,7 +76,7 @@ export class ProductsService {
   }
 
   async findOne(id: string): Promise<Product> {
-    const product = await this.repo
+    const product = await this.productRepository
       .createQueryBuilder('product')
       .leftJoinAndSelect('product.seller', 'seller')
       .leftJoinAndSelect('product.category', 'category')
@@ -75,7 +99,7 @@ export class ProductsService {
   }
 
   async findOneBySlug(slug: string): Promise<Product> {
-    const product = await this.repo
+    const product = await this.productRepository
       .createQueryBuilder('product')
       .leftJoinAndSelect('product.seller', 'seller')
       .leftJoinAndSelect('product.category', 'category')
@@ -94,7 +118,7 @@ export class ProductsService {
     updateProductDto: Partial<UpdateProductDto>,
     currentUser: User,
   ) {
-    const product = await this.repo.findOne({
+    const product = await this.productRepository.findOne({
       where: { id },
       relations: ['seller'],
     });
@@ -102,37 +126,37 @@ export class ProductsService {
     if (!product) {
       throw new NotFoundException(`Product #${id} not found`);
     }
-    if (product.seller.id !== currentUser.id && currentUser.role !== 'admin') {
+    if (product.owner.id !== currentUser.id && currentUser.role !== 'admin') {
       throw new UnauthorizedException(
         `User does not have permission to update this product`,
       );
     }
-    const updatedProduct = await this.repo.preload({
+    const updatedProduct = await this.productRepository.preload({
       id: id,
       ...updateProductDto,
     });
-    return this.repo.save(updatedProduct);
+    return this.productRepository.save(updatedProduct);
   }
 
   async remove(id: string, currentUser: User) {
-    const product = await this.repo.findOne({
+    const product = await this.productRepository.findOne({
       where: { id },
       relations: ['seller'],
     });
     if (!product) {
       throw new NotFoundException(`Product #${id} not found`);
     }
-    if (product.seller.id !== currentUser.id && currentUser.role !== 'admin') {
+    if (product.owner.id !== currentUser.id && currentUser.role !== 'admin') {
       throw new UnauthorizedException(
         `User does not have permission to delete this product`,
       );
     }
-    await this.repo.remove(product);
+    await this.productRepository.remove(product);
     return { message: `${product.name} removed successfully` };
   }
 
   createQuery(query: GetFeaturedProductdDto) {
-    return this.repo
+    return this.productRepository
       .createQueryBuilder('product')
       .select()
       .where('product.status = :status', { status: query.status })

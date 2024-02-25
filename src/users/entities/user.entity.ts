@@ -28,7 +28,7 @@ export class User {
   @Column({ unique: true })
   email: string;
 
-  @OneToMany(() => Product, (product) => product.seller)
+  @OneToMany(() => Product, (product) => product.owner)
   products: Product[];
 
   @OneToMany(() => Address, (address) => address.user)

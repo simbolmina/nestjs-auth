@@ -1,6 +1,4 @@
-import { Body, Controller, Patch, Post, Res } from '@nestjs/common';
-import { UserDto } from '../users/dtos/user.dto';
-import { Serialize } from '../interceptors/serialize.interceptor';
+import { Body, Controller, HttpStatus, Patch, Post, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiTags } from '@nestjs/swagger';
 import { LoginUserDto } from './dto/login-user.dto';
@@ -9,25 +7,31 @@ import { Response } from 'express';
 import { GoogleLoginDto } from './dto/google-login.dto';
 import {
   ChangePasswordDecorator,
+  ForgotPasswordDecorator,
   GoogleLoginDecorator,
   LoginUsersDecorator,
   RegisterUsersDecorator,
+  ResetPasswordDecorator,
 } from './decorators';
 import { CurrentUser } from 'src/users/decorators/current-user.decorator';
 import { User } from 'src/users/entities/user.entity';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { PasswordService } from './password.service';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { AuthenticatedResponseDto } from './dto/auth-response.dto';
 
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private passwordService: PasswordService,
+  ) {}
 
   @RegisterUsersDecorator()
   @Post('register')
-  async registerUser(
-    @Body() body: SignupUserDto,
-    @Res({ passthrough: true }) res: Response,
-  ) {
+  async registerUser(@Body() body: SignupUserDto) {
     return await this.authService.signup(body.email, body.password);
   }
 
@@ -39,10 +43,7 @@ export class AuthController {
 
   @GoogleLoginDecorator()
   @Post('google-login')
-  async googleLogin(
-    @Body() body: GoogleLoginDto,
-    @Res({ passthrough: true }) res: Response,
-  ) {
+  async googleLogin(@Body() body: GoogleLoginDto) {
     return await this.authService.googleLogin(body.credential);
   }
 
@@ -52,6 +53,29 @@ export class AuthController {
     @CurrentUser() user: User,
     @Body() changePasswordDto: ChangePasswordDto,
   ) {
-    return this.authService.changePassword(user.id, changePasswordDto);
+    return this.passwordService.changePassword(user.id, changePasswordDto);
+  }
+
+  @ForgotPasswordDecorator()
+  @Post('forgot-password')
+  async forgotPassword(
+    @Body() body: ForgotPasswordDto,
+    @Res() response: Response,
+  ): Promise<Response> {
+    await this.passwordService.forgotPassword(body.email);
+    return response.status(HttpStatus.OK).json({
+      message: 'Şifre sıfırlama E-postası gönderilmiştir.',
+    });
+  }
+
+  @ResetPasswordDecorator()
+  @Post('reset-password')
+  async resetPassword(
+    @Body() body: ResetPasswordDto,
+  ): Promise<AuthenticatedResponseDto> {
+    return await this.passwordService.resetPassword(
+      body.resetToken,
+      body.newPassword,
+    );
   }
 }

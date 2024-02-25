@@ -8,7 +8,6 @@ import { GoogleProfile, UsersService } from '../users/users.service';
 import { randomBytes, scrypt as _scrypt } from 'crypto';
 import { promisify } from 'util';
 import { JwtService } from '@nestjs/jwt';
-import { User } from '../users/entities/user.entity';
 import { OAuth2Client } from 'google-auth-library';
 import { ChangePasswordDto } from './dto/change-password.dto';
 
@@ -113,32 +112,5 @@ export class AuthService {
     return {
       token: this.jwtService.sign(jwtPayload),
     };
-  }
-
-  async changePassword(
-    userId: string,
-    changePasswordDto: ChangePasswordDto,
-  ): Promise<{ message: string }> {
-    const user = await this.usersService.findOneById(userId);
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
-    const { oldPassword, newPassword } = changePasswordDto;
-    const [salt, storedHash] = user.password.split('.');
-
-    const hash = (await scrypt(oldPassword, salt, 32)) as Buffer;
-
-    if (storedHash !== hash.toString('hex')) {
-      throw new BadRequestException('Old password is incorrect');
-    }
-
-    const newSalt = randomBytes(8).toString('hex');
-    const newHash = (await scrypt(newPassword, newSalt, 32)) as Buffer;
-
-    user.password = newSalt + '.' + newHash.toString('hex');
-    await this.usersService.updateCurrentUser(user.id, user);
-
-    return { message: 'Password successfully updated' };
   }
 }

@@ -13,6 +13,7 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
 import { CurrentUser } from 'src/users/decorators/current-user.decorator';
 import { User } from 'src/users/entities/user.entity';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
+import { ProfileResponseDto } from './dto/profile-response.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('profiles')
@@ -21,8 +22,10 @@ export class ProfilesController {
 
   // Assuming CurrentUser() is a custom decorator to inject the current user's info
   @Get('/my-profile')
-  async findByCurrentUser(@CurrentUser() user: User) {
-    return await this.profileService.findByUserId(user.id);
+  async findByCurrentUser(
+    @CurrentUser() user: User,
+  ): Promise<ProfileResponseDto> {
+    return await this.profileService.findCurrentUserProfile(user.id);
   }
 
   @Patch('/my-profile')

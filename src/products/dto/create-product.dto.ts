@@ -54,36 +54,29 @@ function IsLessThan(property: string, validationOptions?: ValidationOptions) {
 }
 
 export class CreateProductDto {
+  @ApiProperty({
+    example: '60a7b4b3-0b0a-4b4e-8b7a-5b0b2d7b0b2d',
+  })
+  @IsNotEmpty()
+  @IsUUID()
+  categoryId: string; // Change to string or UUID
+
+  @ApiProperty({
+    example: '60a7b4b3-0b0a-4b4e-8b7a-5b0b2d7b0b2d',
+  })
+  @IsNotEmpty()
+  @IsUUID()
+  brandId: string; // Change to string or UUID
+
   @ApiProperty()
   @IsNotEmpty()
   @IsString()
   name: string;
 
   @ApiProperty()
-  @IsOptional()
-  @IsString()
-  slug: string;
-
-  @ApiProperty()
   @IsNotEmpty()
   @IsString()
   description: string;
-
-  @ApiProperty({
-    example: '60a7b4b3-0b0a-4b4e-8b7a-5b0b2d7b0b2d',
-  })
-  @IsNotEmpty()
-  @IsString()
-  @IsUUID()
-  categoryId: Category;
-
-  @ApiProperty({
-    example: '60a7b4b3-0b0a-4b4e-8b7a-5b0b2d7b0b2d',
-  })
-  @IsNotEmpty()
-  @IsString()
-  @IsUUID()
-  brandId: Brand;
 
   @ApiProperty()
   @IsNotEmpty()
@@ -95,12 +88,17 @@ export class CreateProductDto {
   @IsOptional()
   @IsNumber()
   @IsLessThan('price')
-  salePrice: number;
+  discountPrice: number;
 
   @ApiProperty()
   @IsNotEmpty()
   @IsNumber()
   quantity: number;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsNumber()
+  quality: string;
 
   @ApiProperty()
   @IsNotEmpty()
