@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { Variant } from './variant.entity';
 
 @Entity('variantValues')
@@ -9,8 +15,7 @@ export class VariantValue {
   @Column()
   value: string;
 
-  // Define other columns for the variant value entity
-
   @ManyToOne(() => Variant, (variant) => variant.values)
+  @JoinColumn({ name: 'variant_id' }) // This line is optional if you're using default naming conventions
   variant: Variant;
 }

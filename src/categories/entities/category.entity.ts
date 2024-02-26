@@ -17,6 +17,7 @@ import { Product } from '../../products/entities/product.entity';
 import { Attachment } from '../../attachments/entities/attachment.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, MaxLength } from 'class-validator';
+import { Variant } from 'src/variants/entities/variant.entity';
 
 @Entity('categories')
 export class Category {
@@ -55,6 +56,14 @@ export class Category {
   @ApiProperty({ description: 'The products in the category.' })
   @OneToMany(() => Product, (product) => product.category)
   products: Product[];
+
+  @ManyToMany(() => Variant, (variant) => variant.categories)
+  @JoinTable({
+    name: 'category_variants',
+    joinColumn: { name: 'category_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'variant_id', referencedColumnName: 'id' },
+  })
+  variants: Variant[];
 
   @ApiProperty({ description: 'Attachments related to the category.' })
   @ManyToMany(() => Attachment, { cascade: true })

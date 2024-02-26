@@ -7,6 +7,7 @@ import {
   JoinTable,
 } from 'typeorm';
 import { VariantValue } from './variant-values.entity';
+import { Category } from 'src/categories/entities/category.entity';
 
 @Entity('variants')
 export class Variant {
@@ -16,7 +17,12 @@ export class Variant {
   @Column()
   name: string;
 
-  @ManyToMany(() => VariantValue)
-  @JoinTable()
+  @OneToMany(() => VariantValue, (variantValue) => variantValue.variant, {
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
   values: VariantValue[];
+
+  @ManyToMany(() => Category, (category) => category.variants)
+  categories: Category[];
 }

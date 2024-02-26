@@ -14,8 +14,8 @@ export class BrandsService {
     return await this.repo.save(brand);
   }
 
-  findAll() {
-    return `This action returns all brands`;
+  async findAll() {
+    return await this.repo.find();
   }
 
   findOne(id: number) {

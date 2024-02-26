@@ -29,16 +29,16 @@ export class VariantsController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.variantsService.findOne(+id);
+    return this.variantsService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateVariantDto: UpdateVariantDto) {
-    return this.variantsService.update(+id, updateVariantDto);
+    return this.variantsService.update(id, updateVariantDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.variantsService.remove(+id);
+    return this.variantsService.remove(id);
   }
 }
