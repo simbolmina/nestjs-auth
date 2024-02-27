@@ -92,18 +92,8 @@ export class CreateProductDto {
 
   @ApiProperty()
   @IsNotEmpty()
-  @IsNumber()
-  quantity: number;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsNumber()
+  @IsString()
   quality: string;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsEnum(ProductStatus)
-  status: string;
 
   @ApiProperty()
   @IsOptional()

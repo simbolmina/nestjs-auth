@@ -57,9 +57,6 @@ export class UsersController {
     return users;
   }
 
-  @Serialize(UserDto)
-  @Get('/me')
-  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Get current user',
@@ -71,7 +68,11 @@ export class UsersController {
     type: UserDto,
   })
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @Serialize(UserDto)
+  @Get('/me')
+  @UseGuards(JwtAuthGuard)
   getMe(@CurrentUser() user: User) {
+    console.log('GetMe', user);
     return user;
   }
 

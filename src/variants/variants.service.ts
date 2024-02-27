@@ -3,7 +3,7 @@ import { CreateVariantDto } from './dto/create-variant.dto';
 import { UpdateVariantDto } from './dto/update-variant.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Variant } from './entities/variant.entity';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { VariantValue } from './entities/variant-values.entity';
 import { Category } from 'src/categories/entities/category.entity';
 
@@ -60,27 +60,47 @@ export class VariantsService {
   }
 
   async findOne(id: string) {
-    return await this.variantRepository.findOneOrFail({
+    const variant = await this.variantRepository.findOne({
       where: { id },
-      relations: ['values'],
+      relations: ['values', 'categories'],
     });
+
+    if (!variant) {
+      throw new NotFoundException(`Variant #${id} not found`);
+    }
+    return variant;
   }
 
   async update(id: string, updateVariantDto: UpdateVariantDto) {
     const variant = await this.variantRepository.findOne({
       where: { id },
-      relations: ['values'],
+      relations: ['categories', 'values'], // Ensure 'categories' is included in relations
     });
+
     if (!variant) {
       throw new NotFoundException(`Variant #${id} not found`);
     }
 
-    const updatedVariant = await this.variantRepository.preload({
-      id: id,
-      ...updateVariantDto,
-    });
+    // Update variant properties based on updateVariantDto
+    this.variantRepository.merge(variant, updateVariantDto);
 
-    return this.variantRepository.save(updatedVariant);
+    // Handle category associations if categoryIds are provided in the DTO
+    // Handle category associations if categoryIds are provided in the DTO
+    if (
+      updateVariantDto.categoryIds &&
+      updateVariantDto.categoryIds.length > 0
+    ) {
+      // Replace findByIds with findBy using the In operator
+      const categories = await this.categoryRepository.findBy({
+        id: In(updateVariantDto.categoryIds),
+      });
+      variant.categories = categories; // Update the categories associated with the variant
+    }
+
+    // If there are updated values, manage them here
+    // (You can add similar logic as in your create method, if needed, to handle variant values updates)
+
+    return this.variantRepository.save(variant); // Save the updated variant with new category associations
   }
 
   async remove(variantId: string) {

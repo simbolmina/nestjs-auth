@@ -57,4 +57,12 @@ export class CategoriesController {
   remove(@Param('id') id: string) {
     return this.categoriesService.remove(id);
   }
+
+  @Post(':id/subcategories')
+  createSubCategory(
+    @Param('id') parentId: string,
+    @Body() body: CreateCategoryDto,
+  ) {
+    return this.categoriesService.createSubCategory(parentId, body);
+  }
 }

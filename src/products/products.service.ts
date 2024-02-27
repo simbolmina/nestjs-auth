@@ -14,6 +14,9 @@ import { GetFeaturedProductdDto } from './dto/get-featured-product.dto';
 import { GetProductsDto } from './dto/get-product.dto';
 import { Category } from 'src/categories/entities/category.entity';
 import { Brand } from 'src/brands/entities/brand.entity';
+import { MetaDto } from 'src/common/dto/meta.dto';
+import { QueryUtils } from './utils/query.util';
+import { PaginatedProductDto } from './dto/paginated-product.dto';
 
 @Injectable()
 export class ProductsService {
@@ -24,11 +27,12 @@ export class ProductsService {
     private categoryRepository: Repository<Category>,
   ) {}
 
-  async create(body: CreateProductDto, user: User): Promise<Product> {
+  async create(body: CreateProductDto, user: any): Promise<Product> {
     // Use the correct repositories for Brand and Category
     const brand = await this.brandRepository.findOne({
       where: { id: body.brandId },
     });
+
     const category = await this.categoryRepository.findOne({
       where: { id: body.categoryId },
     });
@@ -36,7 +40,6 @@ export class ProductsService {
     if (!category || !brand) {
       throw new NotFoundException('Brand or Category not found');
     }
-
     // Create the product without brandId and categoryId from the DTO
     const product = this.productRepository.create({
       ...body,
@@ -57,22 +60,26 @@ export class ProductsService {
     return this.productRepository.save(product);
   }
 
-  async findAll(query: GetProductsDto) {
-    const { page = 1, limit = 10 } = query;
-    const skip = (page - 1) * limit;
+  async findAll(queryDto: GetProductsDto, user: User): Promise<any> {
+    const [where, paginationOptions] = QueryUtils.buildProductQueryOptions(
+      queryDto,
+      user,
+    );
 
     const [data, total] = await this.productRepository.findAndCount({
-      skip: skip,
-      take: limit,
+      where,
+      ...paginationOptions, // Spread operator to merge paginationOptions into the main query object
     });
 
-    return {
-      data,
-      total,
-      page,
-      limit,
-      pageCount: Math.ceil(total / limit),
+    const totalPages = Math.ceil(total / queryDto.limit);
+    const meta: MetaDto = {
+      page: queryDto.page,
+      pageSize: queryDto.limit,
+      totalItems: total,
+      totalPages,
     };
+
+    return { meta, data };
   }
 
   async findOne(id: string): Promise<Product> {
@@ -101,10 +108,10 @@ export class ProductsService {
   async findOneBySlug(slug: string): Promise<Product> {
     const product = await this.productRepository
       .createQueryBuilder('product')
-      .leftJoinAndSelect('product.seller', 'seller')
+      .leftJoinAndSelect('product.owner', 'owner')
       .leftJoinAndSelect('product.category', 'category')
       .leftJoinAndSelect('product.brand', 'brand')
-      .select(['product', 'category.name', 'brand.name', 'seller.displayName'])
+      .select(['product', 'category.name', 'brand.name'])
       .where('product.slug = :slug', { slug })
       .getOne();
     if (!product) {

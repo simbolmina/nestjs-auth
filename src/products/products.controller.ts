@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -29,17 +30,29 @@ import {
   GetProductBySlugDecorator,
   UpdateProductByIdDecorator,
 } from './decorators';
+import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 
 @ApiTags('products')
 @Controller('products')
 export class ProductsController {
   constructor(private productsService: ProductsService) {}
 
-  @CreateProductDecorator()
   @Serialize(ProductDto)
+  @CreateProductDecorator()
+  @UseGuards(JwtAuthGuard)
   @Post()
-  createProduct(@Body() body: CreateProductDto, @CurrentUser() user: User) {
+  createProduct(
+    @Body() body: CreateProductDto,
+    @CurrentUser() user: Partial<User>,
+  ) {
     return this.productsService.create(body, user);
+  }
+
+  @GetAllProductsDecorator()
+  @Get()
+  findAll(@Query() query: GetProductsDto, @CurrentUser() user: any) {
+    console.log('query', query);
+    return this.productsService.findAll(query, user);
   }
 
   @ChangeProductStatusDecorator()
@@ -55,12 +68,6 @@ export class ProductsController {
   @Get('/featured')
   getProducts(@Query() query: GetFeaturedProductdDto) {
     return this.productsService.createQuery(query);
-  }
-
-  @GetAllProductsDecorator()
-  @Get()
-  findAll(@Query() query: GetProductsDto) {
-    return this.productsService.findAll(query);
   }
 
   @GetProductBySlugDecorator()

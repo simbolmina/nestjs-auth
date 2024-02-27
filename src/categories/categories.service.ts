@@ -33,7 +33,10 @@ export class CategoriesService {
   }
 
   async findOne(id: string): Promise<Category> {
-    const category = await this.repo.findOneBy({ id });
+    const category = await this.repo.findOne({
+      where: { id },
+      relations: ['variants'],
+    });
     if (!category) {
       throw new NotFoundException(`Category #${id} not found`);
     }
@@ -59,5 +62,18 @@ export class CategoriesService {
     }
     await this.repo.remove(category);
     return { message: `${category.name} removed successfully` };
+  }
+
+  async createSubCategory(
+    parentId: string,
+    body: CreateCategoryDto,
+  ): Promise<Category> {
+    const parentCategory = await this.repo.findOneBy({ id: parentId });
+    if (!parentCategory) {
+      throw new NotFoundException(`Parent category #${parentId} not found`);
+    }
+    const subCategory = this.repo.create(body);
+    subCategory.parent = parentCategory; // Set the parent of the subcategory
+    return await this.repo.save(subCategory);
   }
 }

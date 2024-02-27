@@ -40,7 +40,6 @@ export function CreateProductDecorator() {
         'Authenticated but not authorized to perform this operation.',
     }),
     ApiBearerAuth(),
-    UseGuards(JwtAuthGuard),
   );
 }
 
