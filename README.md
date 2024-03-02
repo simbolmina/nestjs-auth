@@ -1,6 +1,6 @@
-# Pazareo API
+# eCommerce API
 
-This is the backend API for the Pazareo project, built using NestJS, TypeORM, and PostgreSQL. The API also includes Swagger documentation for easy testing and exploration of the available endpoints.
+This is the backend API for an ecommercw project, built using NestJS, TypeORM, and PostgreSQL. The API also includes Swagger documentation for easy testing and exploration of the available endpoints.
 
 ## Getting Started
 
@@ -8,7 +8,7 @@ This is the backend API for the Pazareo project, built using NestJS, TypeORM, an
 
 Before you begin, you will need to have the following installed on your machine:
 
-1. [Node.js](https://nodejs.org/) (v14.x or higher)
+1. [Node.js](https://nodejs.org/) (v18.x or higher)
 2. [npm](https://www.npmjs.com/) (v6.x or higher)
 3. [PostgreSQL](https://www.postgresql.org/download/) (v10.x or higher)
 4. [PgAdmin](https://www.pgadmin.org/download/) - a GUI tool for managing PostgreSQL databases
@@ -19,13 +19,13 @@ Before you begin, you will need to have the following installed on your machine:
 1. Clone the repository:
 
 ```
-git clone https://github.com/TheaTech-io/Web-Backend-NestJS-V3.git
+git clone https://github.com/simbolmina/ecommerce-nest-typeorm.git
 ```
 
 2. Install the required packages:
 
 ```
-cd pazareo
+cd ecommerce-nest-typeorm
 npm install
 ```
 

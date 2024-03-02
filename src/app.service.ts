@@ -4,9 +4,9 @@ import { AppInfoDto } from './dtos/app-info.dto';
 @Injectable()
 export class AppService {
   private readonly appInfo: AppInfoDto = {
-    name: 'Pazareo APIs',
+    name: 'eCommerce APIs',
     version: '0.3.0',
-    description: 'This is pazareo API built with NestJS',
+    description: 'This is ecommerce API built with NestJS',
     web: {
       version: '0.4.0',
       lastUpdate: '2023-05-15',

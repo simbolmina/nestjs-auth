@@ -21,8 +21,8 @@ async function bootstrap() {
   );
 
   const config = new DocumentBuilder()
-    .setTitle('Pazareo API')
-    .setDescription('Pazareo API Documentation')
+    .setTitle('eCommerce API')
+    .setDescription('eCommerce API Documentation')
     .setVersion('1.0')
     .addTag('users')
     .setContact(
