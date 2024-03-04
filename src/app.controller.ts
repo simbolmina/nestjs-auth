@@ -40,7 +40,8 @@ export class AppController {
   check() {
     return this.health.check([
       async () => this.db.pingCheck('database', { timeout: 300 }),
-      async () => this.http.pingCheck('nestjs-docs', 'https://docs.nestjs.com'),
+      async () =>
+        this.http.pingCheck('api-docs', 'http://localhost:5000/api-doc'),
     ]);
   }
 }

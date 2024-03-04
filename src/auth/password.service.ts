@@ -12,6 +12,7 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 import { randomBytes, scrypt as _scrypt } from 'crypto';
 import { promisify } from 'util';
 import { AuthenticatedResponseDto } from './dto/auth-response.dto';
+import { TokenService } from './token.service';
 
 const scrypt = promisify(_scrypt);
 
@@ -23,7 +24,7 @@ export class PasswordService {
     private readonly jwtService: JwtService,
     private readonly usersService: UsersService,
     private readonly emailService: EmailService,
-    //   private readonly tokenService: TokenService,
+    private readonly tokenService: TokenService,
   ) {}
 
   async changePassword(
@@ -96,9 +97,12 @@ export class PasswordService {
       passwordResetExpires: null,
     });
 
-    const payload = { sub: user.id, email: user.email };
+    const accessToken = await this.tokenService.createAccessToken(user);
+    const refreshToken = await this.tokenService.createRefreshToken(user);
+
     return {
-      token: this.jwtService.sign(payload),
+      accessToken,
+      refreshToken,
     };
   }
 }

@@ -19,7 +19,6 @@ export class UpdateUserDto {
   @IsStrongPassword()
   password: string;
 
-  @IsNotEmpty()
   @IsNumber()
   @IsOptional()
   tokenVersion: number;

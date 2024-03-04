@@ -1,4 +1,13 @@
-import { Body, Controller, HttpStatus, Patch, Post, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpStatus,
+  Patch,
+  Post,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiTags } from '@nestjs/swagger';
 import { LoginUserDto } from './dto/login-user.dto';
@@ -10,6 +19,7 @@ import {
   ForgotPasswordDecorator,
   GoogleLoginDecorator,
   LoginUsersDecorator,
+  RefreshTokenDecorator,
   RegisterUsersDecorator,
   ResetPasswordDecorator,
 } from './decorators';
@@ -20,6 +30,8 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { PasswordService } from './password.service';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { AuthenticatedResponseDto } from './dto/auth-response.dto';
+import { TokenService } from './token.service';
+import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -27,6 +39,7 @@ export class AuthController {
   constructor(
     private authService: AuthService,
     private passwordService: PasswordService,
+    private tokenService: TokenService,
   ) {}
 
   @RegisterUsersDecorator()
@@ -37,9 +50,14 @@ export class AuthController {
 
   @LoginUsersDecorator()
   @Post('login')
-  async signin(@Body() body: LoginUserDto) {
-    return await this.authService.signin(body.email, body.password);
+  async signin(@CurrentUser() user: any) {
+    return await this.authService.login(user);
   }
+  // @LoginUsersDecorator()
+  // @Post('login')
+  // async signin(@Body() body: LoginUserDto) {
+  //   return await this.authService.signin(body.email, body.password);
+  // }
 
   @GoogleLoginDecorator()
   @Post('google-login')
@@ -48,7 +66,7 @@ export class AuthController {
   }
 
   @ChangePasswordDecorator()
-  @Patch('/change-password')
+  @Patch('change-password')
   async changeMyPassword(
     @CurrentUser() user: User,
     @Body() changePasswordDto: ChangePasswordDto,
@@ -77,5 +95,14 @@ export class AuthController {
       body.resetToken,
       body.newPassword,
     );
+  }
+
+  // @UseGuards(AuthGuard('refresh'))
+  @RefreshTokenDecorator()
+  @Post('refresh')
+  async refresh(
+    @Body('refreshToken') body: string,
+  ): Promise<AuthenticatedResponseDto> {
+    return await this.tokenService.refreshToken(body);
   }
 }

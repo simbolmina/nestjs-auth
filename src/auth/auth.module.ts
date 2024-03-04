@@ -8,9 +8,15 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { UsersModule } from 'src/users/users.module';
 import { PasswordService } from './password.service';
 import { NotificationsModule } from 'src/notifications/notifications.module';
+import { TokenService } from './token.service';
+import { LocalStrategy } from './strategies/local.strategy';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { RefreshToken } from './entities/refresh-token.entity';
+import { RefreshTokenStrategy } from './strategies/refresh.strategy';
 
 @Module({
   imports: [
+    TypeOrmModule.forFeature([RefreshToken]),
     ConfigModule,
     PassportModule,
     JwtModule.registerAsync({
@@ -27,10 +33,11 @@ import { NotificationsModule } from 'src/notifications/notifications.module';
   controllers: [AuthController],
   providers: [
     AuthService,
-    AuthService,
     JwtStrategy,
-    ConfigService,
+    LocalStrategy,
+    RefreshTokenStrategy,
     PasswordService,
+    TokenService,
   ],
 })
 export class AuthModule {}

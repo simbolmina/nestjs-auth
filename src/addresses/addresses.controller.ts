@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { AddressesService } from './addresses.service';
 import { CreateAddressDto } from './dto/create-address.dto';
@@ -31,7 +32,7 @@ export class AddressesController {
   }
 
   @Get('/my-addresses')
-  getCurrentUsersAddress(@CurrentUser() user: User) {
+  getCurrentUsersAddress(@CurrentUser() user: any) {
     return this.addressesService.getCurrentUsersAddress(user);
   }
 

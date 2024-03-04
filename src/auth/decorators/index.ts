@@ -18,6 +18,7 @@ import { commonErrorResponses } from 'src/common/constants';
 import { ForgotPasswordDto } from '../dto/forgot-password.dto';
 import { ResetPasswordDto } from '../dto/reset-password.dto';
 import { AuthenticatedResponseDto } from '../dto/auth-response.dto';
+import { LocalAuthGuard } from 'src/guards/local.guard';
 
 export function RegisterUsersDecorator() {
   return applyDecorators(
@@ -55,6 +56,7 @@ export function LoginUsersDecorator() {
     ApiForbiddenResponse({
       description: 'User is registered through Google',
     }),
+    UseGuards(LocalAuthGuard),
   );
 }
 
@@ -117,5 +119,20 @@ export function ResetPasswordDecorator() {
       type: AuthenticatedResponseDto,
     }),
     ApiNotFoundResponse(commonErrorResponses.invalidKey),
+  );
+}
+
+export function RefreshTokenDecorator() {
+  return applyDecorators(
+    ApiOperation({
+      summary: 'Send refresh token to receive new token and refreshToken',
+    }),
+    // ApiBody({ type: CreateRefreshTokenDto }),
+    ApiCreatedResponse({
+      description:
+        "Returns tokens and account/profile statuses if user's email is not verified and profile is not completed and approved",
+      type: AuthenticatedResponseDto,
+    }),
+    ApiUnauthorizedResponse(commonErrorResponses.invalidKey),
   );
 }

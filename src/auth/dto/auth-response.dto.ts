@@ -6,11 +6,11 @@ export class AuthenticatedResponseDto {
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NGFlNzRjZTU1ZjMxNjI2ZmQ1YmE4YzAiLCJlbWFpbCI6ImFkbWluQG1haWwuY29tIiwiaWF0IjoxNjg5NTc4MDUzLCJleHAiOjE2ODk5MzgwNTN9.04rx2NHdSS4kovTnRjgEs9VWUC6rVulVdnVFjBFcM88',
     description: 'The authentication token',
   })
-  token: string;
+  accessToken: string;
 
-  //   @ApiProperty({
-  //     example: 'tIiwiaWF0IjoxNjg5NTc4MDUzLCJleHAiOjE2ODk5MzgwNTN9',
-  //     description: 'The refresh token',
-  //   })
-  //   refreshToken: string;
+  @ApiProperty({
+    example: 'tIiwiaWF0IjoxNjg5NTc4MDUzLCJleHAiOjE2ODk5MzgwNTN9',
+    description: 'The refresh token',
+  })
+  refreshToken: string;
 }

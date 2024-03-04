@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from './entities/user.entity';
+import { User, UserStatus } from './entities/user.entity';
 import { AdminUpdateUserDto, UpdateUserDto } from './dtos/update-user.dto';
 import { EventEmitter2 } from 'eventemitter2';
 
@@ -87,7 +87,7 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
 
-    user.active = false;
+    user.status = UserStatus.Inactive;
     await this.repo.save(user);
     return user;
   }

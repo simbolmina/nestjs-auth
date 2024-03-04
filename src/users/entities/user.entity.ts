@@ -18,6 +18,16 @@ import { Cart } from '../../cart/entities/cart.entity';
 import { Wishlist } from '../../wishlists/entities/wishlist.entity';
 import { Notification } from '../../notifications/entities/notification.entity';
 import { Profile } from 'src/profiles/entities/profile.entity';
+import { RefreshToken } from 'src/auth/entities/refresh-token.entity';
+
+export enum UserStatus {
+  Pending = 'pending',
+  Active = 'active',
+  Inactive = 'inactive',
+  Blocked = 'blocked',
+  SoftDeleted = 'soft_deleted',
+  Deleted = 'deleted',
+}
 
 @Entity('users')
 @Index(['googleId', 'email', 'id'], { unique: true })
@@ -82,11 +92,20 @@ export class User {
   })
   role: string;
 
-  @Column({ nullable: true, default: true })
-  active: boolean;
+  @Column({
+    type: String,
+    enum: UserStatus,
+    default: UserStatus.Active,
+  })
+  status: UserStatus;
 
-  @Column({ nullable: true, default: false })
-  isVIP: boolean;
+  @OneToMany(() => RefreshToken, (refreshToken) => refreshToken.user, {
+    cascade: true,
+  })
+  refreshTokens: RefreshToken[];
+
+  @Column({ default: 0 })
+  tokenVersion: number;
 
   @Column({ nullable: true })
   passwordChangedAt: Date;
