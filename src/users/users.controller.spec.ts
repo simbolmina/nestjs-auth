@@ -3,7 +3,7 @@ import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { AuthService } from '../auth/auth.service';
 import { User } from './entities/user.entity';
-import { SerializeInterceptor } from '../interceptors/serialize.interceptor';
+import { SerializeInterceptor } from '../common/interceptors/serialize.interceptor';
 import { NotFoundException } from '@nestjs/common';
 import { UserDto } from './dtos/user.dto';
 import { Response } from 'express';

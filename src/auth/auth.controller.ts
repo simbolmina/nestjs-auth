@@ -1,16 +1,6 @@
-import {
-  Body,
-  Controller,
-  HttpStatus,
-  Patch,
-  Post,
-  Req,
-  Res,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, HttpStatus, Patch, Post, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiTags } from '@nestjs/swagger';
-import { LoginUserDto } from './dto/login-user.dto';
 import { SignupUserDto } from './dto/signup-user.dto';
 import { Response } from 'express';
 import { GoogleLoginDto } from './dto/google-login.dto';
@@ -24,14 +14,13 @@ import {
   ResetPasswordDecorator,
 } from './decorators';
 import { CurrentUser } from 'src/users/decorators/current-user.decorator';
-import { User } from 'src/users/entities/user.entity';
+//import { User } from 'src/users/entities/user.entity';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { PasswordService } from './password.service';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { AuthenticatedResponseDto } from './dto/auth-response.dto';
 import { TokenService } from './token.service';
-import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -45,7 +34,7 @@ export class AuthController {
   @RegisterUsersDecorator()
   @Post('register')
   async registerUser(@Body() body: SignupUserDto) {
-    return await this.authService.signup(body.email, body.password);
+    return await this.authService.register(body.email, body.password);
   }
 
   @LoginUsersDecorator()
@@ -53,11 +42,6 @@ export class AuthController {
   async signin(@CurrentUser() user: any) {
     return await this.authService.login(user);
   }
-  // @LoginUsersDecorator()
-  // @Post('login')
-  // async signin(@Body() body: LoginUserDto) {
-  //   return await this.authService.signin(body.email, body.password);
-  // }
 
   @GoogleLoginDecorator()
   @Post('google-login')
@@ -68,7 +52,7 @@ export class AuthController {
   @ChangePasswordDecorator()
   @Patch('change-password')
   async changeMyPassword(
-    @CurrentUser() user: User,
+    @CurrentUser() user: any,
     @Body() changePasswordDto: ChangePasswordDto,
   ) {
     return this.passwordService.changePassword(user.id, changePasswordDto);

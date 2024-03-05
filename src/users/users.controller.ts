@@ -24,6 +24,7 @@ import {
   UpdateCurrentUserDecorator,
   UpdateUserByIdDecorator,
 } from './decorators';
+import { UpdateMeDto } from './dtos/update-me.dto';
 
 @ApiTags('users')
 @Controller('users')
@@ -32,38 +33,34 @@ export class UsersController {
 
   @GetAllUsersDecorator()
   @Get()
-  async findAllUsers() {
-    const users = await this.usersService.findAll();
-    if (!users.length) {
-      throw new NotFoundException('No users found');
-    }
-    return users;
+  async findAllUsers(): Promise<User[]> {
+    return await this.usersService.findAll();
   }
 
   @GetCurrentUserDecorator()
   @Get('/me')
-  getMe(@CurrentUser() user: any) {
+  getMe(@CurrentUser() user: any): Promise<User> {
     return user;
   }
 
   @UpdateCurrentUserDecorator()
   @Patch('/me')
   async updateCurrentUser(
-    @CurrentUser() user: User,
-    @Body() body: Partial<UpdateUserDto>,
-  ) {
+    @CurrentUser() user: any,
+    @Body() body: UpdateMeDto,
+  ): Promise<User> {
     return await this.usersService.updateCurrentUser(user.id, body);
   }
 
   @DeleteCurrentUserDecorator()
   @Delete('/me')
-  async removeCurrentUser(@CurrentUser() user: User) {
-    return await this.usersService.deactivate(user.id);
+  async removeCurrentUser(@CurrentUser() user: any): Promise<void> {
+    await this.usersService.deactivate(user.id);
   }
 
   @GetUserByIdDecorator()
   @Get('/:id')
-  async findUser(@Param('id') id: string) {
+  async findUser(@Param('id') id: string): Promise<User> {
     const user = await this.usersService.findOneById(id);
     if (!user) {
       throw new NotFoundException('user not found');

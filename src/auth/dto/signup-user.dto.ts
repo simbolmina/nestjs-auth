@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsString, MinLength } from 'class-validator';
-import { UserDto } from '../../users/dtos/user.dto';
+import { IsEmail, IsStrongPassword } from 'class-validator';
 
 export class SignupUserDto {
   @ApiProperty({
@@ -12,22 +11,9 @@ export class SignupUserDto {
 
   @ApiProperty({
     description: 'The password of the user',
-    example: 'password',
+    example: 'StrongPassw0rd!',
     minLength: 5,
   })
-  @IsString()
-  @MinLength(5, { message: 'Password should be at least 8 characters long' })
+  @IsStrongPassword()
   password: string;
-}
-
-export class UserSignupResponseDto {
-  @ApiProperty({ type: () => UserDto })
-  data: UserDto;
-
-  @ApiProperty({
-    description: 'The JWT token to include in the header of future requests',
-    example:
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5NTEwMGUzZi0xMmYxLTQxN2UtYjg4ZC04NTJmN2QwZTAxOGYiLCJlbWFpbCI6ImFkbWluQGVtYWlsLmNvbSIsImlhdCI6MTY4NDQxMDc1OCwiZXhwIjoxNjkyMTg2NzU4fQ.yy5gvPs6QB7bQWabZaaugYrNYeR6IVDN-OYpI_i0Pus',
-  })
-  token: string;
 }

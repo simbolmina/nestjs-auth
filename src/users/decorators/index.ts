@@ -17,7 +17,7 @@ import { LocalAuthGuard } from 'src/guards/local.guard';
 import { AdminGuard } from 'src/guards/admin.guard';
 import { User } from '../entities/user.entity';
 import { UserDto } from '../dtos/user.dto';
-import { Serialize } from 'src/interceptors/serialize.interceptor';
+import { Serialize } from 'src/common/interceptors/serialize.interceptor';
 import { AdminUpdateUserDto, UpdateUserDto } from '../dtos/update-user.dto';
 
 export function GetAllUsersDecorator() {
@@ -29,7 +29,7 @@ export function GetAllUsersDecorator() {
       description:
         'This endpoint retrieves all user entries from the database. Only administrators can access this endpoint to view the full list of users.',
     }),
-    ApiOkResponse({ description: 'Returns all users', type: [User] }),
+    ApiOkResponse({ description: 'Returns all users', type: [UserDto] }),
     ApiNotFoundResponse({ description: 'No users found' }),
     ApiUnauthorizedResponse({ description: 'Unauthorized' }),
     ApiForbiddenResponse({ description: 'Forbidden resource' }),

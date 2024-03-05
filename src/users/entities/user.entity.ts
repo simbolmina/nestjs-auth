@@ -32,19 +32,7 @@ export class User {
   email: string;
 
   @Column({ nullable: true })
-  fcmToken: string;
-
-  @Column({ nullable: true })
-  isActivatedWithEmail: boolean;
-
-  @Column({ nullable: true })
-  isActivatedWithPhone: boolean;
-
-  @Column({ nullable: true })
   googleId: string;
-
-  @Column({ nullable: true })
-  lastActive: Date;
 
   @Column({
     nullable: false,
@@ -81,16 +69,10 @@ export class User {
   tokenVersion: number;
 
   @Column({ nullable: true })
-  passwordChangedAt: Date;
-
-  @Column({ nullable: true })
   passwordResetCode: string;
 
   @Column({ nullable: true })
   passwordResetExpires: Date;
-
-  @Column({ nullable: true })
-  passwordResetVerified: boolean;
 
   @CreateDateColumn()
   createdAt: Date;

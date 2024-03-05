@@ -8,7 +8,6 @@ export const APP_RATE_LIMIT = 60;
 
 // Port
 export const PORT = 5000;
-
 export const commonErrorResponses = {
   badRequest: {
     description: 'Returns when input is invalid.',
@@ -21,85 +20,85 @@ export const commonErrorResponses = {
     },
   },
   badUpdateRequest: {
-    description: 'Returns when input is invalid.',
+    description: 'Returns when input is invalid for an update operation.',
     schema: {
       example: {
         statusCode: 400,
-        message: ['Input format or value is invalid'],
+        message: ['Input format or value is invalid for update'],
         error: 'Bad Request',
       },
     },
   },
   invalidCredentials: {
-    description: 'Returns when input is not valid',
+    description: 'Returns when the provided credentials are invalid.',
     schema: {
       example: {
         statusCode: 401,
         message:
-          'Emamil veya şifreniz hatalı. Giriş bilgilerinizi kontrol ederek yeniden deneyiniz.',
+          'Invalid email or password. Please check your login details and try again.',
         error: 'Unauthorized',
       },
     },
   },
   unAuthorized: {
     description:
-      'Returns when there is no token available or user does not have permission to access the API',
+      'Returns when there is no token available, or the user does not have permission to access the API.',
     schema: {
       example: {
         statusCode: 401,
-        message: 'Bu işlemi yapmak için yetkiniz yok.',
-        error: 'UnAuthorized',
+        message: 'You do not have permission to perform this action.',
+        error: 'Unauthorized',
       },
     },
   },
   forbidden: {
     description:
-      'Returns when user is not admin or user does not own the current document',
+      'Returns when the user is not an admin or does not own the current document.',
     schema: {
       example: {
         statusCode: 403,
-        message: 'Bu kaynağa erişim izniniz yok.',
+        message: 'You do not have access to this resource.',
         error: 'Forbidden',
       },
     },
   },
   notFound: {
-    description: 'Returns when document (id) not found',
+    description: 'Returns when the requested resource (id) is not found.',
     schema: {
       example: {
         statusCode: 404,
-        message: 'Erişmeye çalıştığınız kaynak bulunamadı.',
+        message: 'The resource you are trying to access was not found.',
         error: 'Not Found',
       },
     },
   },
   tokenNotFound: {
-    description: 'Returns when token is not found or expired/invalid',
+    description: 'Returns when the token is not found or is expired/invalid.',
     schema: {
       example: {
         statusCode: 404,
-        message: 'Geçersiz veya süresi dolmuş anahtar.',
+        message: 'Token not found or expired.',
         error: 'Not Found',
       },
     },
   },
   unprocessableEntityResponse: {
-    description: 'Returns when user/email already exists',
+    description: 'Returns when the user/email already exists.',
     schema: {
       example: {
         statusCode: 422,
-        message: 'Bu e-posta ile kaydolamazsınız.',
+        message: 'You cannot register with this email address.',
         error: 'Unprocessable Entity',
       },
     },
   },
   invalidKey: {
-    description: 'Returns when token is invalid ',
+    description: 'Returns when the provided token is invalid.',
     schema: {
       example: {
         statusCode: 422,
-        message: 'Anahtarınız geçersiz veya süresi dolmuş',
-        error: 'UnAuthorized',
+        message: 'Your key is invalid or has expired.',
+        error: 'Unauthorized',
       },
     },
   },

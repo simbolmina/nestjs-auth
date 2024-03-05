@@ -9,9 +9,8 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiUnauthorizedResponse,
+  ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
-import { UserLoginResponseDto } from '../dto/login-user.dto';
-import { UserSignupResponseDto } from '../dto/signup-user.dto';
 import { ChangePasswordDto } from '../dto/change-password.dto';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 import { commonErrorResponses } from 'src/common/constants';
@@ -19,6 +18,8 @@ import { ForgotPasswordDto } from '../dto/forgot-password.dto';
 import { ResetPasswordDto } from '../dto/reset-password.dto';
 import { AuthenticatedResponseDto } from '../dto/auth-response.dto';
 import { LocalAuthGuard } from 'src/guards/local.guard';
+import { LoginUserDto } from '../dto/login-user.dto';
+import { RefreshTokenDto } from '../dto/refresh-token.dto';
 
 export function RegisterUsersDecorator() {
   return applyDecorators(
@@ -29,14 +30,13 @@ export function RegisterUsersDecorator() {
     }),
     ApiCreatedResponse({
       description: 'The user has been successfully created.',
-      type: UserLoginResponseDto,
+      type: AuthenticatedResponseDto,
     }),
-    ApiBadRequestResponse({
-      description: 'Invalid data provided or email already in use',
-    }),
-    ApiForbiddenResponse({
-      description: 'The email is associated with a Google account',
-    }),
+    ApiBadRequestResponse(commonErrorResponses.badRequest),
+    ApiForbiddenResponse(commonErrorResponses.forbidden),
+    ApiUnprocessableEntityResponse(
+      commonErrorResponses.unprocessableEntityResponse,
+    ),
   );
 }
 
@@ -49,13 +49,12 @@ export function LoginUsersDecorator() {
     }),
     ApiOkResponse({
       description: 'Returns the user and access token',
-      type: UserSignupResponseDto,
+      type: AuthenticatedResponseDto,
     }),
+    ApiBody({ type: LoginUserDto }),
     ApiBadRequestResponse(commonErrorResponses.badRequest),
     ApiNotFoundResponse(commonErrorResponses.notFound),
-    ApiForbiddenResponse({
-      description: 'User is registered through Google',
-    }),
+    ApiForbiddenResponse(commonErrorResponses.forbidden),
     UseGuards(LocalAuthGuard),
   );
 }
@@ -69,9 +68,10 @@ export function GoogleLoginDecorator() {
     }),
     ApiCreatedResponse({
       description: 'The user has been successfully logged in or created.',
-      type: UserLoginResponseDto,
+      type: AuthenticatedResponseDto,
     }),
     ApiBadRequestResponse(commonErrorResponses.badRequest),
+    ApiUnauthorizedResponse(commonErrorResponses.invalidKey),
   );
 }
 
@@ -87,7 +87,7 @@ export function ChangePasswordDecorator() {
       description: 'Password has been changed',
     }),
     ApiBadRequestResponse(commonErrorResponses.badRequest),
-    ApiUnauthorizedResponse({ description: 'Unauthorized' }),
+    ApiUnauthorizedResponse(commonErrorResponses.unAuthorized),
     ApiBody({
       description: 'Password change data',
       type: ChangePasswordDto,
@@ -114,8 +114,7 @@ export function ResetPasswordDecorator() {
       description: 'Reset Token and New Password',
     }),
     ApiCreatedResponse({
-      description:
-        "Returns tokens and account/profile statuses if user's email is not verified and profile is not completed and approved",
+      description: 'Returns tokens ',
       type: AuthenticatedResponseDto,
     }),
     ApiNotFoundResponse(commonErrorResponses.invalidKey),
@@ -127,12 +126,11 @@ export function RefreshTokenDecorator() {
     ApiOperation({
       summary: 'Send refresh token to receive new token and refreshToken',
     }),
-    // ApiBody({ type: CreateRefreshTokenDto }),
     ApiCreatedResponse({
-      description:
-        "Returns tokens and account/profile statuses if user's email is not verified and profile is not completed and approved",
+      description: 'Returns tokens',
       type: AuthenticatedResponseDto,
     }),
     ApiUnauthorizedResponse(commonErrorResponses.invalidKey),
+    ApiBody({ type: RefreshTokenDto }),
   );
 }

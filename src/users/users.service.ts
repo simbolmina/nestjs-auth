@@ -3,7 +3,6 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User, UserStatus } from './entities/user.entity';
 import { AdminUpdateUserDto, UpdateUserDto } from './dtos/update-user.dto';
-import { EventEmitter2 } from 'eventemitter2';
 
 export type GoogleProfile = {
   email: string;
@@ -17,81 +16,84 @@ export type GoogleProfile = {
 
 @Injectable()
 export class UsersService {
-  private readonly _onUserCreated = new EventEmitter2();
-
   constructor(@InjectRepository(User) private repo: Repository<User>) {}
 
-  get onUserCreated() {
-    return this._onUserCreated;
-  }
-
-  async create(email: string, password: string) {
+  // Creates a new user with the given email and password
+  async create(email: string, password: string): Promise<User> {
     const user = this.repo.create({ email, password });
-    const savedUser = await this.repo.save(user);
-    this._onUserCreated.emit('user.created', savedUser.id); // Emit after save
-    return savedUser;
+    return await this.repo.save(user);
   }
 
-  async findAll() {
+  // Retrieves all users from the database
+  async findAll(): Promise<User[]> {
     return await this.repo.find();
   }
 
-  async findByEmail(email: string) {
+  // Finds a user by their email address
+  async findByEmail(email: string): Promise<User | null> {
     return await this.repo.findOneBy({ email });
   }
 
-  async findOneById(id: string) {
-    if (!id) {
-      return null;
-    }
+  // Finds a single user by their unique identifier
+  async findOneById(id: string): Promise<User | null> {
     return await this.repo.findOneBy({ id });
   }
 
-  async findByGoogleId(googleId: string) {
-    return this.repo.findOneBy({ googleId });
+  // Finds a user by their Google ID
+  async findByGoogleId(googleId: string): Promise<User | null> {
+    return await this.repo.findOneBy({ googleId });
   }
 
-  // inside your UsersService
+  // Creates a new user from a Google profile
   async createFromGoogle(profile: GoogleProfile): Promise<User> {
     const user = this.repo.create(profile);
-    return this.repo.save(user);
+    return await this.repo.save(user);
   }
 
-  async updateCurrentUser(id: string, attrs: Partial<UpdateUserDto>) {
+  // Updates current user information
+  async updateCurrentUser(
+    id: string,
+    attrs: Partial<UpdateUserDto>,
+  ): Promise<User> {
     const user = await this.repo.preload({ id, ...attrs });
     if (!user) {
-      throw new NotFoundException('user not found');
+      throw new NotFoundException('User not found');
     }
-    return this.repo.save(user);
+    return await this.repo.save(user);
   }
 
-  async updateUserByAdmin(id: string, attrs: Partial<AdminUpdateUserDto>) {
+  // Allows admin to update a user's information
+  async updateUserByAdmin(
+    id: string,
+    attrs: Partial<AdminUpdateUserDto>,
+  ): Promise<User> {
     const user = await this.repo.preload({ id, ...attrs });
     if (!user) {
-      throw new NotFoundException('user not found');
+      throw new NotFoundException('User not found');
     }
-    return this.repo.save(user);
+    return await this.repo.save(user);
   }
 
-  async remove(id: string) {
+  // Removes a user from the database
+  async remove(id: string): Promise<User> {
     const user = await this.findOneById(id);
     if (!user) {
-      throw new NotFoundException('user not found');
+      throw new NotFoundException('User not found');
     }
-    return this.repo.remove(user);
+    return await this.repo.remove(user);
   }
 
-  async deactivate(id: string): Promise<User> {
+  // Deactivates a user's account
+  async deactivate(id: string): Promise<void> {
     const user = await this.repo.findOne({ where: { id } });
     if (!user) {
       throw new NotFoundException('User not found');
     }
-
-    user.status = UserStatus.Inactive;
-    await this.repo.save(user);
-    return user;
+    user.status = UserStatus.Inactive; // Set the user's status to inactive
+    await this.repo.save(user); // Save the changes to the database
   }
 
+  // Finds a user by their password reset token
   async findByResetToken(passwordResetCode: string): Promise<User | null> {
     return await this.repo.findOneBy({ passwordResetCode });
   }

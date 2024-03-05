@@ -4,10 +4,8 @@ import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './database/database.module';
-import { ValidationModule } from './validation/validation.module';
-// import { currentConfig } from '../db-config';
+import { ValidationModule } from './common/validation/validation.module';
 import { TerminusModule } from '@nestjs/terminus';
-import { HttpModule } from '@nestjs/axios';
 import { AuthModule } from './auth/auth.module';
 
 @Module({
@@ -17,7 +15,6 @@ import { AuthModule } from './auth/auth.module';
     UsersModule,
     ValidationModule,
     TerminusModule,
-    HttpModule,
     AuthModule,
   ],
   controllers: [AppController],

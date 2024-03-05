@@ -7,8 +7,8 @@ import {
   HttpHealthIndicator,
   TypeOrmHealthIndicator,
 } from '@nestjs/terminus';
-import { HealthCheckDto } from './dtos/healt-check.dto';
-import { AppInfoDto } from './dtos/app-info.dto';
+import { HealthCheckDto } from './common/dto/healt-check.dto';
+import { AppInfoDto } from './common/dto/app-info.dto';
 
 @ApiTags('app')
 @Controller()
