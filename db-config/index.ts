@@ -1,14 +1,14 @@
 // index.ts
 
 import { DataSource } from 'typeorm';
-import { developmentConfig, testConfig, productionConfig } from './data-source';
+import { developmentConfig, testConfig } from './data-source';
 
 const env = process.env.NODE_ENV || 'development';
 
 const configMap = {
   development: developmentConfig,
   test: testConfig,
-  production: productionConfig,
+  // production: productionConfig,
 };
 
 export const currentConfig = configMap[env];

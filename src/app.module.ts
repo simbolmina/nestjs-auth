@@ -9,7 +9,6 @@ import { ValidationModule } from './validation/validation.module';
 import { TerminusModule } from '@nestjs/terminus';
 import { HttpModule } from '@nestjs/axios';
 import { AuthModule } from './auth/auth.module';
-import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
@@ -20,7 +19,6 @@ import { CommonModule } from './common/common.module';
     TerminusModule,
     HttpModule,
     AuthModule,
-    CommonModule,
   ],
   controllers: [AppController],
   providers: [AppService],

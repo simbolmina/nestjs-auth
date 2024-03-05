@@ -24,15 +24,3 @@ export const testConfig: DataSourceOptions = {
   entities: ['src/**/*.entity.ts', 'dist/**/*.entity.js'],
   migrations: ['dist/db-config/migrations/*.js'],
 };
-
-export const productionConfig: DataSourceOptions = {
-  type: 'postgres',
-  host: 'geyimburada-db.chvyow1o816w.eu-central-1.rds.amazonaws.com',
-  port: 5432,
-  username: 'postgres',
-  password: 'User-1234',
-  database: 'dev_db',
-  synchronize: false,
-  entities: ['**/**/*.entity.ts', 'dist/**/*.entity.js'],
-  migrations: ['dist/db-config/migrations/*.js'],
-};
