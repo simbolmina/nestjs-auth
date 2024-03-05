@@ -19,6 +19,7 @@ import { User } from '../entities/user.entity';
 import { UserDto } from '../dtos/user.dto';
 import { Serialize } from 'src/common/interceptors/serialize.interceptor';
 import { AdminUpdateUserDto, UpdateUserDto } from '../dtos/update-user.dto';
+import { commonErrorResponses } from 'src/common/constants';
 
 export function GetAllUsersDecorator() {
   return applyDecorators(
@@ -30,9 +31,8 @@ export function GetAllUsersDecorator() {
         'This endpoint retrieves all user entries from the database. Only administrators can access this endpoint to view the full list of users.',
     }),
     ApiOkResponse({ description: 'Returns all users', type: [UserDto] }),
-    ApiNotFoundResponse({ description: 'No users found' }),
-    ApiUnauthorizedResponse({ description: 'Unauthorized' }),
-    ApiForbiddenResponse({ description: 'Forbidden resource' }),
+    ApiUnauthorizedResponse(commonErrorResponses.unAuthorized),
+    ApiForbiddenResponse(commonErrorResponses.forbidden),
   );
 }
 
@@ -48,7 +48,7 @@ export function GetCurrentUserDecorator() {
       description: 'Returns the current user',
       type: UserDto,
     }),
-    ApiUnauthorizedResponse({ description: 'Unauthorized' }),
+    ApiUnauthorizedResponse(commonErrorResponses.unAuthorized),
     Serialize(UserDto),
     UseGuards(JwtAuthGuard),
   );
@@ -71,7 +71,7 @@ export function UpdateCurrentUserDecorator() {
     ApiBadRequestResponse({
       description: 'Invalid data provided',
     }),
-    ApiUnauthorizedResponse({ description: 'Unauthorized' }),
+    ApiUnauthorizedResponse(commonErrorResponses.unAuthorized),
     ApiBody({
       description: 'Allowed data to be updated by user',
       type: UpdateUserDto,
@@ -92,7 +92,7 @@ export function DeleteCurrentUserDecorator() {
     ApiNoContentResponse({
       description: 'User has been deactivated',
     }),
-    ApiUnauthorizedResponse({ description: 'Unauthorized' }),
+    ApiUnauthorizedResponse(commonErrorResponses.unAuthorized),
   );
 }
 
@@ -109,9 +109,9 @@ export function GetUserByIdDecorator() {
       description: 'Returns the user with the given ID',
       type: User,
     }),
-    ApiUnauthorizedResponse({ description: 'Unauthorized' }),
-    ApiForbiddenResponse({ description: 'Forbidden resource' }),
-    ApiNotFoundResponse({ description: 'User not found' }),
+    ApiUnauthorizedResponse(commonErrorResponses.unAuthorized),
+    ApiForbiddenResponse(commonErrorResponses.forbidden),
+    ApiNotFoundResponse(commonErrorResponses.notFound),
   );
 }
 
@@ -129,9 +129,9 @@ export function GetUserByEmailDecorator() {
       description: 'Returns users with the given email',
       type: User,
     }),
-    ApiNotFoundResponse({ description: 'User not found' }),
-    ApiUnauthorizedResponse({ description: 'Unauthorized' }),
-    ApiForbiddenResponse({ description: 'Forbidden resource' }),
+    ApiNotFoundResponse(commonErrorResponses.notFound),
+    ApiUnauthorizedResponse(commonErrorResponses.unAuthorized),
+    ApiForbiddenResponse(commonErrorResponses.forbidden),
   );
 }
 
@@ -149,9 +149,9 @@ export function UpdateUserByIdDecorator() {
       description:
         'This endpoint allows an administrator to update user details for any user in the database. Only administrators can access this endpoint.',
     }),
-    ApiNotFoundResponse({ description: 'User not found' }),
-    ApiUnauthorizedResponse({ description: 'Unauthorized' }),
-    ApiForbiddenResponse({ description: 'Forbidden resource' }),
+    ApiNotFoundResponse(commonErrorResponses.notFound),
+    ApiUnauthorizedResponse(commonErrorResponses.unAuthorized),
+    ApiForbiddenResponse(commonErrorResponses.forbidden),
   );
 }
 
@@ -165,9 +165,9 @@ export function DeleteUserByIdDecorator() {
         'This endpoint allows an administrator to deactivate a user account. Deactivated accounts are not deleted and can be reactivated. Only administrators can access this endpoint.',
     }),
     ApiNoContentResponse({ description: 'User has been deactivated' }),
-    ApiNotFoundResponse({ description: 'User not found' }),
-    ApiUnauthorizedResponse({ description: 'Unauthorized' }),
-    ApiForbiddenResponse({ description: 'Forbidden resource' }),
+    ApiNotFoundResponse(commonErrorResponses.notFound),
+    ApiUnauthorizedResponse(commonErrorResponses.unAuthorized),
+    ApiForbiddenResponse(commonErrorResponses.forbidden),
   );
 }
 
@@ -181,8 +181,8 @@ export function HardDeleteUserByIdDecorator() {
         'This endpoint allows an administrator to permanently delete a user account from the database. This operation cannot be undone. Only administrators can access this endpoint.',
     }),
     ApiNoContentResponse({ description: 'User has been deleted' }),
-    ApiNotFoundResponse({ description: 'User not found' }),
-    ApiUnauthorizedResponse({ description: 'Unauthorized' }),
-    ApiForbiddenResponse({ description: 'Forbidden resource' }),
+    ApiNotFoundResponse(commonErrorResponses.notFound),
+    ApiUnauthorizedResponse(commonErrorResponses.unAuthorized),
+    ApiForbiddenResponse(commonErrorResponses.forbidden),
   );
 }
