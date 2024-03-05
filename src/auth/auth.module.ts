@@ -7,7 +7,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { UsersModule } from 'src/users/users.module';
 import { PasswordService } from './password.service';
-import { NotificationsModule } from 'src/notifications/notifications.module';
 import { TokenService } from './token.service';
 import { LocalStrategy } from './strategies/local.strategy';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -28,7 +27,6 @@ import { RefreshTokenStrategy } from './strategies/refresh.strategy';
       inject: [ConfigService],
     }),
     UsersModule,
-    NotificationsModule,
   ],
   controllers: [AuthController],
   providers: [

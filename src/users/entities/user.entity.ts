@@ -1,4 +1,3 @@
-import { Product } from '../../products/entities/product.entity';
 import {
   AfterInsert,
   AfterRemove,
@@ -11,13 +10,7 @@ import {
   UpdateDateColumn,
   Index,
   DeleteDateColumn,
-  OneToOne,
 } from 'typeorm';
-import { Address } from '../../addresses/entities/address.entity';
-import { Cart } from '../../cart/entities/cart.entity';
-import { Wishlist } from '../../wishlists/entities/wishlist.entity';
-import { Notification } from '../../notifications/entities/notification.entity';
-import { Profile } from 'src/profiles/entities/profile.entity';
 import { RefreshToken } from 'src/auth/entities/refresh-token.entity';
 
 export enum UserStatus {
@@ -37,26 +30,6 @@ export class User {
 
   @Column({ unique: true })
   email: string;
-
-  @OneToMany(() => Product, (product) => product.owner)
-  products: Product[];
-
-  @OneToMany(() => Address, (address) => address.user)
-  addresses: Address[];
-
-  @OneToOne(() => Cart, (cart) => cart.user)
-  cart: Cart[];
-
-  @OneToMany((type) => Wishlist, (wishlist) => wishlist.user, {
-    cascade: true,
-  })
-  wishlists: Wishlist[];
-
-  @OneToMany(() => Notification, (notification) => notification.recipientUserId)
-  notifications: Notification[];
-
-  @OneToOne(() => Profile, (profile) => profile.user)
-  profile: Profile;
 
   @Column({ nullable: true })
   fcmToken: string;

@@ -6,7 +6,6 @@ import {
 } from '@nestjs/common';
 import * as crypto from 'crypto';
 import { UsersService } from 'src/users/users.service';
-import { EmailService } from '../notifications/email.service';
 import { JwtService } from '@nestjs/jwt';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { randomBytes, scrypt as _scrypt } from 'crypto';
@@ -23,7 +22,6 @@ export class PasswordService {
   constructor(
     private readonly jwtService: JwtService,
     private readonly usersService: UsersService,
-    private readonly emailService: EmailService,
     private readonly tokenService: TokenService,
   ) {}
 
@@ -69,7 +67,7 @@ export class PasswordService {
       passwordResetExpires: resetTokenExpiry,
     });
 
-    await this.emailService.sendForgotPasswordEmail(resetToken, user.email);
+    //await this.emailService.sendForgotPasswordEmail(resetToken, user.email);
   }
 
   async resetPassword(

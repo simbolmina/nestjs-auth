@@ -46,7 +46,7 @@ export class TokenService {
     };
     return this.jwtService.sign(payload, {
       secret: this.ACCESS_TOKEN_SECRET,
-      expiresIn: '30m', // Adjust the expiration as needed
+      expiresIn: '15m',
     });
   }
 
@@ -57,7 +57,7 @@ export class TokenService {
     const refreshTokenPayload = { sub: user.id };
     const jwtPart = this.jwtService.sign(refreshTokenPayload, {
       secret: this.REFRESH_TOKEN_SECRET,
-      expiresIn: '90d', // Set your desired expiration
+      expiresIn: '30d',
     });
 
     const uniqueTokenIdentifier = randomBytes(16).toString('hex');
@@ -70,7 +70,7 @@ export class TokenService {
     const refreshToken = this.refreshTokenRepository.create({
       user: user,
       token: hash.toString('hex'),
-      expiresIn: Date.now() + 90 * 24 * 60 * 60 * 1000, // Expires in 90 days
+      expiresIn: Date.now() + 30 * 24 * 60 * 60 * 1000,
     });
 
     await this.refreshTokenRepository.save(refreshToken);
@@ -120,9 +120,6 @@ export class TokenService {
     // Validate the provided refresh token
     const refreshToken = await this.validateToken(oldRefreshToken);
 
-    // Delete the old refresh token
-    // await this.refreshTokenRepository.remove(refreshToken);
-
     // Generate new tokens
     const user = await this.usersService.findOneById(refreshToken.user.id);
     if (!user) {
@@ -132,11 +129,9 @@ export class TokenService {
     const newAccessToken = await this.createAccessToken(user);
     const newRefreshToken = await this.createRefreshToken(user);
 
-    const loginResponse: any = {
+    return {
       accessToken: newAccessToken,
       refreshToken: newRefreshToken,
     };
-
-    return loginResponse;
   }
 }

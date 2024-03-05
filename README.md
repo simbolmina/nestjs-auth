@@ -1,6 +1,8 @@
-# eCommerce API
+# NestJS Authentication and User Management API
 
-This is the backend API for an ecommercw project, built using NestJS, TypeORM, and PostgreSQL. The API also includes Swagger documentation for easy testing and exploration of the available endpoints.
+This project is a showcase of a backend API developed using NestJS, demonstrating capabilities in user management, authentication, and both unit and end-to-end testing. It utilizes TypeORM with PostgreSQL for database interactions and includes comprehensive API documentation using Swagger.
+
+Codes are stripped out from a bigger app so there are some unnecessary codes in app here and there.
 
 ## Getting Started
 
@@ -19,13 +21,13 @@ Before you begin, you will need to have the following installed on your machine:
 1. Clone the repository:
 
 ```
-git clone https://github.com/simbolmina/ecommerce-nest-typeorm.git
+git clone https://github.com/simbolmina/nestjs-auth.git
 ```
 
 2. Install the required packages:
 
 ```
-cd ecommerce-nest-typeorm
+cd nestjs-auth
 npm install
 ```
 
@@ -39,7 +41,7 @@ npm install
 npm run start:dev
 ```
 
-The application will be running at `http://localhost:5000/api/v3`.
+The application will be running at `http://localhost:5000/api/v1`.
 
 2. Access the Swagger UI at `http://localhost:5000/api-doc
 
@@ -80,6 +82,14 @@ npm run migration:revert
 ```
 
 For an example in action, check out this video: [https://www.youtube.com/watch?v=5G81_VIjaO8&t=96s](https://www.youtube.com/watch?v=5G81_VIjaO8&t=96s).
+
+## Features and Modules
+
+The API includes the following key features:
+
+User Module: Manages user registration, information updates, and retrieval.
+Auth Module: Supports authentication workflows using JWT, including login, token refresh, and role-based access control.
+Testing: Includes comprehensive unit and end-to-end tests to ensure functionality and stability.
 
 ## API Documentation
 
@@ -150,3 +160,9 @@ someMethod() {
 ```
 
 For more detailed information, refer to the NestJS configuration documentation: https://docs.nestjs.com/techniques/configuration
+
+## License
+
+This project is open-sourced under the MIT License. See the LICENSE file for more details.
+
+Adjust the contents as necessary to align with your project's actual configuration and features.

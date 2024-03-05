@@ -7,7 +7,7 @@ import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.setGlobalPrefix('api/v3');
+  app.setGlobalPrefix('api/v1');
   app.enableCors();
   app.use(cookieParser());
   // app.useGlobalFilters(new AllExceptionsFilter());
@@ -21,15 +21,11 @@ async function bootstrap() {
   );
 
   const config = new DocumentBuilder()
-    .setTitle('eCommerce API')
-    .setDescription('eCommerce API Documentation')
+    .setTitle('Auth API')
+    .setDescription('Auth API Documentation')
     .setVersion('1.0')
     .addTag('users')
-    .setContact(
-      'Dev Team In Discord',
-      'https://discord.gg/TSnhsqAu',
-      'support@example.com',
-    )
+    .setContact('Bilal ARKAN', 'https://discord.gg/xxx', 'simbolmina@gmail.com')
     .addBearerAuth(
       { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
       'token',
