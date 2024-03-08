@@ -22,6 +22,11 @@ export enum UserStatus {
   Deleted = 'deleted',
 }
 
+export enum UserRoles {
+  User = 'user',
+  Admin = 'admin',
+}
+
 @Entity('users')
 @Index(['googleId', 'email', 'id'], { unique: true })
 export class User {
@@ -48,10 +53,10 @@ export class User {
   @Column({
     nullable: false,
     type: 'enum',
-    enum: ['user', 'manager', 'admin'],
-    default: 'user',
+    enum: UserRoles,
+    default: UserRoles.User,
   })
-  role: string;
+  role: UserRoles;
 
   @Column({
     type: String,

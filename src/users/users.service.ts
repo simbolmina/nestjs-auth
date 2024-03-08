@@ -1,8 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User, UserStatus } from './entities/user.entity';
+import { User, UserRoles, UserStatus } from './entities/user.entity';
 import { AdminUpdateUserDto, UpdateUserDto } from './dtos/update-user.dto';
+import { RefreshToken } from 'src/auth/entities/refresh-token.entity';
+import { UsersQueryDto } from './dtos/user-query.dto';
+import { SortOrder } from 'src/common/enums';
+import { Cache } from 'cache-manager';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { PaginatedUserDto } from './dtos/paginated-users.dto';
 
 export type GoogleProfile = {
   email: string;
@@ -16,7 +22,12 @@ export type GoogleProfile = {
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectRepository(User) private repo: Repository<User>) {}
+  constructor(
+    @InjectRepository(User) private repo: Repository<User>,
+    @InjectRepository(RefreshToken)
+    private refreshTokenRepo: Repository<RefreshToken>,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+  ) {}
 
   // Creates a new user with the given email and password
   async create(email: string, password: string): Promise<User> {
@@ -25,8 +36,56 @@ export class UsersService {
   }
 
   // Retrieves all users from the database
-  async findAll(): Promise<User[]> {
-    return await this.repo.find();
+  async findAll(queryDto: UsersQueryDto): Promise<PaginatedUserDto> {
+    const { page, limit, sortBy, sortOrder, ...filters } = queryDto;
+
+    // Create query builder
+    const queryBuilder = this.repo.createQueryBuilder('user');
+
+    // Apply filters, excluding status for special handling
+    Object.keys(filters).forEach((key) => {
+      if (key !== 'status' && filters[key]) {
+        queryBuilder.andWhere(`user.${key} = :${key}`, { [key]: filters[key] });
+      }
+    });
+
+    // Handle status as a special case, allowing for array-based filtering
+    if (filters.status) {
+      if (Array.isArray(filters.status)) {
+        queryBuilder.andWhere('user.status IN (:...status)', {
+          status: filters.status,
+        });
+      } else {
+        queryBuilder.andWhere('user.status = :status', {
+          status: filters.status,
+        });
+      }
+    }
+
+    // Apply sorting
+    const sortField = sortBy || 'createdAt'; // Default sorting field
+    const sortOrderValue = sortOrder === SortOrder.ASC ? 'ASC' : 'DESC';
+    queryBuilder.orderBy(`user.${sortField}`, sortOrderValue);
+
+    // Pagination
+    const skip = ((page || 1) - 1) * (limit || 10);
+    queryBuilder.skip(skip).take(limit);
+
+    // Execute the query
+    const [results, totalItems] = await queryBuilder.getManyAndCount();
+
+    // Calculate total pages
+    const totalPages = Math.ceil(totalItems / (limit || 10));
+
+    return {
+      data: results,
+      meta: {
+        page: page || 1,
+        pageSize: limit || 10,
+        totalItems,
+        totalPages,
+      },
+    };
   }
 
   // Finds a user by their email address
@@ -96,5 +155,34 @@ export class UsersService {
   // Finds a user by their password reset token
   async findByResetToken(passwordResetCode: string): Promise<User | null> {
     return await this.repo.findOneBy({ passwordResetCode });
+  }
+
+  async banUser(id: string): Promise<void> {
+    // Retrieve the user from the database
+    const user = await this.repo.findOneBy({ id });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // Additional logs for debugging
+    console.log('Banning user:', user);
+
+    // Update the user's status and token version
+    user.status = UserStatus.Blocked;
+    user.tokenVersion += 1;
+    await this.repo.save(user);
+
+    // Delete refresh tokens
+    await this.refreshTokenRepo.delete({ user: user });
+  }
+
+  async assignRole(userId: string, role: UserRoles): Promise<void> {
+    const user = await this.repo.findOneBy({ id: userId });
+    if (!user) {
+      throw new Error('User not found');
+    }
+    user.role = role;
+    await this.repo.save(user);
   }
 }

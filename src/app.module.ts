@@ -7,10 +7,16 @@ import { DatabaseModule } from './database/database.module';
 import { ValidationModule } from './common/validation/validation.module';
 import { TerminusModule } from '@nestjs/terminus';
 import { AuthModule } from './auth/auth.module';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
+    CacheModule.register({
+      ttl: 60,
+      max: 1000,
+      isGlobal: true,
+    }),
     DatabaseModule,
     UsersModule,
     ValidationModule,

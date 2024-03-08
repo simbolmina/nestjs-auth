@@ -9,6 +9,7 @@ import {
   IsStrongPassword,
   IsDate,
 } from 'class-validator';
+import { UserRoles } from '../entities/user.entity';
 
 export class UpdateUserDto {
   @IsNotEmpty()
@@ -44,13 +45,10 @@ export class AdminUpdateUserDto extends UpdateUserDto {
   @ApiProperty({
     description: 'The role of the user',
     example: 'user',
-    enum: ['user', 'manager', 'admin'],
+    enum: UserRoles,
     required: false,
   })
-  @IsEnum(
-    { user: 'user', manager: 'manager', admin: 'admin' },
-    { message: 'Role must be either user, manager, or admin' },
-  )
+  @IsEnum(UserRoles, { message: 'Role must be either user, manager, or admin' })
   @IsOptional()
-  role?: string;
+  role?: UserRoles;
 }

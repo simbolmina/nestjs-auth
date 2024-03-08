@@ -15,22 +15,26 @@ import {
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 import { LocalAuthGuard } from 'src/guards/local.guard';
 import { AdminGuard } from 'src/guards/admin.guard';
-import { User } from '../entities/user.entity';
+import { User, UserRoles } from '../entities/user.entity';
 import { UserDto } from '../dtos/user.dto';
 import { Serialize } from 'src/common/interceptors/serialize.interceptor';
 import { AdminUpdateUserDto, UpdateUserDto } from '../dtos/update-user.dto';
 import { commonErrorResponses } from 'src/common/constants';
+import { RolesGuard } from 'src/guards/role.guard';
+import { Roles } from './roles.decorator';
+import { PaginatedUserDto } from '../dtos/paginated-users.dto';
 
 export function GetAllUsersDecorator() {
   return applyDecorators(
-    UseGuards(JwtAuthGuard, AdminGuard),
+    UseGuards(JwtAuthGuard),
+    // UseGuards(JwtAuthGuard, AdminGuard),
     ApiBearerAuth(),
     ApiOperation({
       summary: 'Get all users',
       description:
         'This endpoint retrieves all user entries from the database. Only administrators can access this endpoint to view the full list of users.',
     }),
-    ApiOkResponse({ description: 'Returns all users', type: [UserDto] }),
+    ApiOkResponse({ description: 'Returns all users', type: PaginatedUserDto }),
     ApiUnauthorizedResponse(commonErrorResponses.unAuthorized),
     ApiForbiddenResponse(commonErrorResponses.forbidden),
   );
@@ -115,6 +119,24 @@ export function GetUserByIdDecorator() {
   );
 }
 
+export function BanUserDecorator() {
+  return applyDecorators(
+    UseGuards(JwtAuthGuard, AdminGuard), // Adjust guards as necessary
+    ApiBearerAuth(),
+    ApiOperation({
+      summary: 'Ban a user',
+      description:
+        'This endpoint bans a user based on their user ID. Only administrators can access this endpoint to ban users. Ban is in immmedate effect, at next api call of the user',
+    }),
+    ApiOkResponse({
+      description: 'The user has been successfully banned',
+    }),
+    ApiNotFoundResponse(commonErrorResponses.notFound),
+    ApiUnauthorizedResponse(commonErrorResponses.unAuthorized),
+    ApiForbiddenResponse(commonErrorResponses.forbidden),
+  );
+}
+
 export function GetUserByEmailDecorator() {
   return applyDecorators(
     UseGuards(JwtAuthGuard, AdminGuard),
@@ -184,5 +206,13 @@ export function HardDeleteUserByIdDecorator() {
     ApiNotFoundResponse(commonErrorResponses.notFound),
     ApiUnauthorizedResponse(commonErrorResponses.unAuthorized),
     ApiForbiddenResponse(commonErrorResponses.forbidden),
+  );
+}
+
+export function AssignRoleDecorator() {
+  return applyDecorators(
+    ApiOperation({ summary: 'Change role of a user : ADMIN' }),
+    UseGuards(JwtAuthGuard, RolesGuard),
+    Roles(UserRoles.Admin, UserRoles.User),
   );
 }
