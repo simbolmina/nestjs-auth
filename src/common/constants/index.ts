@@ -34,8 +34,9 @@ export const commonErrorResponses = {
     schema: {
       example: {
         statusCode: 401,
-        message:
+        message: [
           'Invalid email or password. Please check your login details and try again.',
+        ],
         error: 'Unauthorized',
       },
     },
@@ -46,7 +47,7 @@ export const commonErrorResponses = {
     schema: {
       example: {
         statusCode: 401,
-        message: 'You do not have permission to perform this action.',
+        message: ['You do not have permission to perform this action.'],
         error: 'Unauthorized',
       },
     },
@@ -57,7 +58,7 @@ export const commonErrorResponses = {
     schema: {
       example: {
         statusCode: 403,
-        message: 'You do not have access to this resource.',
+        message: ['You do not have access to this resource.'],
         error: 'Forbidden',
       },
     },
@@ -67,7 +68,7 @@ export const commonErrorResponses = {
     schema: {
       example: {
         statusCode: 404,
-        message: 'The resource you are trying to access was not found.',
+        message: ['The resource you are trying to access was not found.'],
         error: 'Not Found',
       },
     },
@@ -77,7 +78,7 @@ export const commonErrorResponses = {
     schema: {
       example: {
         statusCode: 404,
-        message: 'Token not found or expired.',
+        message: ['Token not found or expired.'],
         error: 'Not Found',
       },
     },
@@ -87,7 +88,7 @@ export const commonErrorResponses = {
     schema: {
       example: {
         statusCode: 422,
-        message: 'You cannot register with this email address.',
+        message: ['You cannot register with this email address.'],
         error: 'Unprocessable Entity',
       },
     },
@@ -97,7 +98,7 @@ export const commonErrorResponses = {
     schema: {
       example: {
         statusCode: 422,
-        message: 'Your key is invalid or has expired.',
+        message: ['Your key is invalid or has expired.'],
         error: 'Unauthorized',
       },
     },

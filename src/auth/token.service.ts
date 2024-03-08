@@ -12,8 +12,8 @@ import { ConfigService } from '@nestjs/config';
 import { randomBytes, scrypt } from 'crypto';
 import { promisify } from 'util';
 import { RefreshToken } from './entities/refresh-token.entity';
-import { UsersService } from 'src/users/users.service';
-import { User } from 'src/users/entities/user.entity';
+import { UsersService } from '../users/users.service';
+import { User } from '../users/entities/user.entity';
 
 // Convert scrypt callback function to a promise-based version for async use
 const scryptAsync = promisify(scrypt);

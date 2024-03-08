@@ -11,8 +11,8 @@ export class LoginUserDto {
 
   @ApiProperty({
     description: 'The password of the user',
-    example: '123456',
-    minLength: 5,
+    example: 'StrongPass0rd!',
+    minLength: 8,
   })
   @IsStrongPassword()
   password: string;

@@ -12,11 +12,11 @@ import { AuthController } from '../auth/auth.controller';
 describe('UsersController', () => {
   let usersController: UsersController;
   let authController: AuthController;
-  let fakeUsersService: Partial<UsersService>;
+  let userService: Partial<UsersService>;
   let fakeAuthService: Partial<AuthService>;
 
   beforeEach(async () => {
-    fakeUsersService = {
+    userService = {
       findAll: () => {
         return Promise.resolve([
           { id: '1', email: 'test@test.com', password: 'test' } as User,
@@ -78,7 +78,7 @@ describe('UsersController', () => {
       providers: [
         {
           provide: UsersService,
-          useValue: fakeUsersService,
+          useValue: userService,
         },
         {
           provide: AuthService,
@@ -105,7 +105,7 @@ describe('UsersController', () => {
   });
 
   it('findUser throws an error if user with given id is not found', async () => {
-    fakeUsersService.findOneById = () => null;
+    userService.findOneById = () => null;
     await expect(usersController.findUser('1')).rejects.toThrow(
       NotFoundException,
     );
@@ -160,7 +160,7 @@ describe('UsersController', () => {
   });
 
   it('removeUser throws an error if user is not found', async () => {
-    fakeUsersService.deactivate = () => Promise.reject(new NotFoundException());
+    userService.deactivate = () => Promise.reject(new NotFoundException());
     await expect(usersController.removeUser('nonexistent')).rejects.toThrow(
       NotFoundException,
     );

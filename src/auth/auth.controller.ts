@@ -21,6 +21,7 @@ import { PasswordService } from './password.service';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { AuthenticatedResponseDto } from './dto/auth-response.dto';
 import { TokenService } from './token.service';
+import { UsersService } from 'src/users/users.service';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -29,6 +30,7 @@ export class AuthController {
     private authService: AuthService,
     private passwordService: PasswordService,
     private tokenService: TokenService,
+    private usersService: UsersService,
   ) {}
 
   @RegisterUsersDecorator()
@@ -55,7 +57,10 @@ export class AuthController {
     @CurrentUser() user: any,
     @Body() changePasswordDto: ChangePasswordDto,
   ) {
-    return this.passwordService.changePassword(user.id, changePasswordDto);
+    this.passwordService.changePassword(user.id, changePasswordDto);
+
+    const updatedUser = await this.usersService.findOneById(user.id);
+    return await this.authService.login(updatedUser);
   }
 
   @ForgotPasswordDecorator()

@@ -1,4 +1,9 @@
-import { Module } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { PassportModule } from '@nestjs/passport';
@@ -12,6 +17,8 @@ import { LocalStrategy } from './strategies/local.strategy';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RefreshToken } from './entities/refresh-token.entity';
 import { RefreshTokenStrategy } from './strategies/refresh.strategy';
+import { ValidateLoginMiddleware } from './middlewares/validation.middleware';
+import { CryptoService } from './crypto.service';
 
 @Module({
   imports: [
@@ -22,7 +29,7 @@ import { RefreshTokenStrategy } from './strategies/refresh.strategy';
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         secret: configService.get('TOKEN_SECRET_KEY'),
-        signOptions: { expiresIn: '90d' },
+        signOptions: { expiresIn: '30d' },
       }),
       inject: [ConfigService],
     }),
@@ -36,6 +43,13 @@ import { RefreshTokenStrategy } from './strategies/refresh.strategy';
     RefreshTokenStrategy,
     PasswordService,
     TokenService,
+    CryptoService,
   ],
 })
-export class AuthModule {}
+export class AuthModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(ValidateLoginMiddleware)
+      .forRoutes({ path: 'auth/login', method: RequestMethod.POST });
+  }
+}

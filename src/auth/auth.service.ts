@@ -6,15 +6,11 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
-import { randomBytes, scrypt as _scrypt } from 'crypto';
-import { promisify } from 'util';
 import { OAuth2Client } from 'google-auth-library';
-import { User, UserStatus } from 'src/users/entities/user.entity';
-import { AccountInactiveException } from 'src/common/exceptions/account-inactive.exception';
+import { User, UserStatus } from '../users/entities/user.entity';
+import { AccountInactiveException } from '../common/exceptions/account-inactive.exception';
 import { TokenService } from './token.service';
-
-// Convert scrypt, which originally uses callbacks, to a promise-based function to avoid callback hell.
-const scrypt = promisify(_scrypt);
+import { CryptoService } from './crypto.service';
 
 // Initialize the OAuth2Client with the Google client ID from the environment variables.
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -22,8 +18,9 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 @Injectable()
 export class AuthService {
   constructor(
-    private usersService: UsersService,
-    private tokenService: TokenService,
+    private readonly usersService: UsersService,
+    private readonly tokenService: TokenService,
+    private readonly cryptoService: CryptoService,
   ) {}
 
   async register(email: string, password: string) {
@@ -40,15 +37,13 @@ export class AuthService {
     // If the user exists but is not associated with Google, throw an exception
     if (user) throw new BadRequestException('Email is already in use.');
 
-    // Generate a random salt and hash the password with it
-    const salt = randomBytes(8).toString('hex');
-    const hash = (await scrypt(password, salt, 32)) as Buffer;
-    const result = salt + '.' + hash.toString('hex');
+    // Hash the password using the CryptoService
+    const hashedPassword = await this.cryptoService.hashPassword(password);
 
     // Create and save the new user with the hashed password
     const createdUser = await this.usersService.create(
-      email.toLowerCase(),
-      result,
+      email.toLowerCase(), // Good practice to normalize emails
+      hashedPassword,
     );
 
     // Generate access and refresh tokens for the new user
@@ -134,10 +129,12 @@ export class AuthService {
       throw new NotFoundException('No user found with this email address.');
     }
 
-    // Verify the password against the stored hash
-    const [salt, storedHash] = user.password.split('.');
-    const hash = (await scrypt(password, salt, 32)) as Buffer;
-    if (storedHash !== hash.toString('hex')) {
+    // Verify the password against the stored hash using the CryptoService
+    const isValidPassword = await this.cryptoService.validatePassword(
+      password,
+      user.password,
+    );
+    if (!isValidPassword) {
       throw new BadRequestException('Incorrect email or password.');
     }
 

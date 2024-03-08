@@ -54,7 +54,6 @@ export function LoginUsersDecorator() {
     ApiBody({ type: LoginUserDto }),
     ApiBadRequestResponse(commonErrorResponses.badRequest),
     ApiNotFoundResponse(commonErrorResponses.notFound),
-    ApiForbiddenResponse(commonErrorResponses.forbidden),
     UseGuards(LocalAuthGuard),
   );
 }

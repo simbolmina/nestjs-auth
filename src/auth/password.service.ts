@@ -5,12 +5,13 @@ import {
   Logger,
 } from '@nestjs/common';
 import * as crypto from 'crypto';
-import { UsersService } from 'src/users/users.service';
+import { UsersService } from '../users/users.service';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { randomBytes, scrypt as _scrypt } from 'crypto';
 import { promisify } from 'util';
 import { AuthenticatedResponseDto } from './dto/auth-response.dto';
 import { TokenService } from './token.service';
+import { CryptoService } from './crypto.service';
 
 // Convert scrypt callback function to promise-based to use async/await
 const scrypt = promisify(_scrypt);
@@ -22,37 +23,37 @@ export class PasswordService {
   constructor(
     private readonly usersService: UsersService,
     private readonly tokenService: TokenService,
+    private readonly cryptoService: CryptoService,
   ) {}
 
   async changePassword(
     userId: string,
     changePasswordDto: ChangePasswordDto,
-  ): Promise<{ message: string }> {
-    // Retrieve the user by their ID
+  ): Promise<void> {
     const user = await this.usersService.findOneById(userId);
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    // Destructure old and new password values from the DTO
     const { oldPassword, newPassword } = changePasswordDto;
-    // Split the user's stored password hash to extract the salt and hash
-    const [salt, storedHash] = user.password.split('.');
 
-    // Hash the old password with the stored salt to verify if it matches the stored hash
-    const hash = (await scrypt(oldPassword, salt, 32)) as Buffer;
-    if (storedHash !== hash.toString('hex')) {
+    // Validate the old password
+    const isValidOldPassword = await this.cryptoService.validatePassword(
+      oldPassword,
+      user.password,
+    );
+    if (!isValidOldPassword) {
       throw new BadRequestException('Old password is incorrect');
     }
 
-    // Create a new salt and hash for the new password
-    const newSalt = randomBytes(8).toString('hex');
-    const newHash = (await scrypt(newPassword, newSalt, 32)) as Buffer;
-    // Update the user's password with the new salt and hash
-    user.password = newSalt + '.' + newHash.toString('hex');
-    await this.usersService.updateCurrentUser(user.id, user);
+    // Hash the new password
+    user.password = await this.cryptoService.hashPassword(newPassword);
 
-    return { message: 'Password successfully updated' };
+    // Increment tokenVersion safely
+    user.tokenVersion = (user.tokenVersion || 0) + 1; // This ensures that tokenVersion is a number and increments it
+
+    // Save the updated user
+    await this.usersService.updateCurrentUser(user.id, user);
   }
 
   async forgotPassword(email: string): Promise<void> {
@@ -95,17 +96,15 @@ export class PasswordService {
       );
     }
 
-    // Create a new salt and hash for the new password
-    const newSalt = randomBytes(16).toString('hex');
-    const newHash = (await scrypt(newPassword, newSalt, 32)) as Buffer;
-    const hashedNewPassword = newSalt + '.' + newHash.toString('hex');
+    // Hash the new password using the CryptoService
+    user.password = await this.cryptoService.hashPassword(newPassword);
 
-    // Update the user's password and clear the reset token and expiry time
-    await this.usersService.updateCurrentUser(user.id, {
-      password: hashedNewPassword,
-      passwordResetCode: null,
-      passwordResetExpires: null,
-    });
+    // Clear the reset token and expiry time from the user's account
+    user.passwordResetCode = null;
+    user.passwordResetExpires = null;
+
+    // Update the user's password and reset token fields
+    await this.usersService.updateCurrentUser(user.id, user);
 
     // Generate new access and refresh tokens for the user
     const accessToken = await this.tokenService.createAccessToken(user);

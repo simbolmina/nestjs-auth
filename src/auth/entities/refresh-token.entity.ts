@@ -1,4 +1,4 @@
-import { User } from 'src/users/entities/user.entity';
+import { User } from '../../users/entities/user.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -10,7 +10,7 @@ import {
 @Entity()
 export class RefreshToken {
   @PrimaryGeneratedColumn('uuid')
-  id: string; // Assuming you want to use UUIDs for IDs, otherwise just use 'increment' for numerical IDs
+  id: string;
 
   @Index()
   @ManyToOne(() => User, (user) => user.refreshTokens)

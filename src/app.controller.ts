@@ -15,9 +15,9 @@ import { AppInfoDto } from './common/dto/app-info.dto';
 export class AppController {
   constructor(
     private readonly appService: AppService,
-    private health: HealthCheckService,
-    private db: TypeOrmHealthIndicator,
-    private http: HttpHealthIndicator,
+    private readonly health: HealthCheckService,
+    private readonly db: TypeOrmHealthIndicator,
+    private readonly http: HttpHealthIndicator,
   ) {}
 
   @Get('info')

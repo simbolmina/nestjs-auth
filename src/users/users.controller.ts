@@ -29,7 +29,7 @@ import { UpdateMeDto } from './dtos/update-me.dto';
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
-  constructor(private usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) {}
 
   @GetAllUsersDecorator()
   @Get()

@@ -11,7 +11,7 @@ import {
   Index,
   DeleteDateColumn,
 } from 'typeorm';
-import { RefreshToken } from 'src/auth/entities/refresh-token.entity';
+import { RefreshToken } from '../../auth/entities/refresh-token.entity';
 
 export enum UserStatus {
   Pending = 'pending',

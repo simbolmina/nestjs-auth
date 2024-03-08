@@ -14,13 +14,13 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 
 describe('AuthController', () => {
   let authController: AuthController;
-  let fakeUsersService: Partial<UsersService>;
+  let userService: Partial<UsersService>;
   let fakeAuthService: Partial<AuthService>;
   let fakeUserRepository: Partial<Repository<User>>;
   const userArray: User[] = [];
 
   beforeEach(async () => {
-    fakeUsersService = {
+    userService = {
       findAll: () => {
         return Promise.resolve([
           { id: '1', email: 'test@test.com', password: 'test' } as User,
@@ -145,7 +145,7 @@ describe('AuthController', () => {
       controllers: [AuthController, UsersController],
       providers: [
         JwtStrategy,
-        { provide: UsersService, useValue: fakeUsersService },
+        { provide: UsersService, useValue: userService },
         { provide: AuthService, useValue: fakeAuthService },
         {
           provide: JwtService,
