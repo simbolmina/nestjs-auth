@@ -7,14 +7,9 @@ import {
 import * as crypto from 'crypto';
 import { UsersService } from '../users/users.service';
 import { ChangePasswordDto } from './dto/change-password.dto';
-import { randomBytes, scrypt as _scrypt } from 'crypto';
-import { promisify } from 'util';
 import { AuthenticatedResponseDto } from './dto/auth-response.dto';
 import { TokenService } from './token.service';
 import { CryptoService } from './crypto.service';
-
-// Convert scrypt callback function to promise-based to use async/await
-const scrypt = promisify(_scrypt);
 
 @Injectable()
 export class PasswordService {
@@ -54,6 +49,13 @@ export class PasswordService {
 
     // Save the updated user
     await this.usersService.updateCurrentUser(user.id, user);
+
+    this.logger.log(
+      JSON.stringify({
+        action: 'change-password',
+        userId: user.id,
+      }),
+    );
   }
 
   async forgotPassword(email: string): Promise<void> {
@@ -75,8 +77,15 @@ export class PasswordService {
       passwordResetExpires: resetTokenExpiry,
     });
 
+    this.logger.log(
+      JSON.stringify({
+        action: 'forgot-password',
+        userId: user.id,
+        email: user.email,
+      }),
+    );
+
     // Note: Email service for sending forgot password email should be implemented here
-    // await this.emailService.sendForgotPasswordEmail(resetToken, user.email);
   }
 
   async resetPassword(
@@ -109,6 +118,13 @@ export class PasswordService {
     // Generate new access and refresh tokens for the user
     const accessToken = await this.tokenService.createAccessToken(user);
     const refreshToken = await this.tokenService.createRefreshToken(user);
+
+    this.logger.log(
+      JSON.stringify({
+        action: 'reset-password',
+        userId: user.id,
+      }),
+    );
 
     // Return the new tokens
     return {

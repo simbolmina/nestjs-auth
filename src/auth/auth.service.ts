@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
@@ -17,6 +18,8 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly usersService: UsersService,
     private readonly tokenService: TokenService,
@@ -51,6 +54,13 @@ export class AuthService {
     const refreshToken =
       await this.tokenService.createRefreshToken(createdUser);
 
+    this.logger.log(
+      JSON.stringify({
+        action: 'register',
+        userId: user.id,
+        email: user.email,
+      }),
+    );
     // Return the tokens
     return {
       accessToken,
@@ -73,6 +83,14 @@ export class AuthService {
     // Generate and return access and refresh tokens for the active user
     const accessToken = await this.tokenService.createAccessToken(user);
     const refreshToken = await this.tokenService.createRefreshToken(user);
+
+    this.logger.log(
+      JSON.stringify({
+        action: 'login',
+        userId: user.id,
+        method: 'email',
+      }),
+    );
 
     return {
       accessToken,
@@ -108,13 +126,21 @@ export class AuthService {
     const accessToken = await this.tokenService.createAccessToken(user);
     const refreshToken = await this.tokenService.createRefreshToken(user);
 
+    this.logger.log(
+      JSON.stringify({
+        action: 'login',
+        userId: user.id,
+        method: 'google',
+      }),
+    );
+
     return {
       accessToken,
       refreshToken,
     };
   }
 
-  async verifyUser(email: string, password: string) {
+  async verifyUser(email: string, password: string): Promise<User> {
     // Attempt to find the user by email
     const user = await this.usersService.findByEmail(email);
     // Check if the user has previously signed up with Google

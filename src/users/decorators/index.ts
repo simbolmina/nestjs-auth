@@ -23,11 +23,11 @@ import { commonErrorResponses } from 'src/common/constants';
 import { RolesGuard } from 'src/guards/role.guard';
 import { Roles } from './roles.decorator';
 import { PaginatedUserDto } from '../dtos/paginated-users.dto';
+import { UpdateMeDto } from '../dtos/update-me.dto';
 
 export function GetAllUsersDecorator() {
   return applyDecorators(
-    UseGuards(JwtAuthGuard),
-    // UseGuards(JwtAuthGuard, AdminGuard),
+    UseGuards(JwtAuthGuard, AdminGuard),
     ApiBearerAuth(),
     ApiOperation({
       summary: 'Get all users',
@@ -53,7 +53,7 @@ export function GetCurrentUserDecorator() {
       type: UserDto,
     }),
     ApiUnauthorizedResponse(commonErrorResponses.unAuthorized),
-    Serialize(UserDto),
+    // Serialize(UserDto),
     UseGuards(JwtAuthGuard),
   );
 }
@@ -78,7 +78,7 @@ export function UpdateCurrentUserDecorator() {
     ApiUnauthorizedResponse(commonErrorResponses.unAuthorized),
     ApiBody({
       description: 'Allowed data to be updated by user',
-      type: UpdateUserDto,
+      type: UpdateMeDto,
     }),
   );
 }
@@ -162,7 +162,7 @@ export function UpdateUserByIdDecorator() {
     UseGuards(JwtAuthGuard, AdminGuard),
     ApiBody({
       description: 'Allowed data to be updated by user',
-      type: AdminUpdateUserDto,
+      type: UpdateMeDto,
     }),
     ApiBearerAuth(),
     ApiOkResponse({ type: User }),

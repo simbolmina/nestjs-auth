@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Inject, UseInterceptors } from '@nestjs/common';
 import { AppService } from './app.service';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
@@ -9,6 +9,8 @@ import {
 } from '@nestjs/terminus';
 import { HealthCheckDto } from './common/dto/healt-check.dto';
 import { AppInfoDto } from './common/dto/app-info.dto';
+import { Cache } from 'cache-manager';
+import { CACHE_MANAGER, CacheInterceptor } from '@nestjs/cache-manager';
 
 @ApiTags('app')
 @Controller()
@@ -43,5 +45,11 @@ export class AppController {
       async () =>
         this.http.pingCheck('api-docs', 'http://localhost:5000/api-doc'),
     ]);
+  }
+
+  @UseInterceptors(CacheInterceptor)
+  @Get('hello')
+  async getHello() {
+    return this.appService.getHello();
   }
 }

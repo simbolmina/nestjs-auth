@@ -8,12 +8,13 @@ import { ValidationModule } from './common/validation/validation.module';
 import { TerminusModule } from '@nestjs/terminus';
 import { AuthModule } from './auth/auth.module';
 import { CacheModule } from '@nestjs/cache-manager';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
     CacheModule.register({
-      ttl: 60,
+      ttl: 10000, // ttl in ms
       max: 1000,
       isGlobal: true,
     }),
@@ -22,6 +23,7 @@ import { CacheModule } from '@nestjs/cache-manager';
     ValidationModule,
     TerminusModule,
     AuthModule,
+    HttpModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -17,7 +17,6 @@ import {
   AssignRoleDecorator,
   BanUserDecorator,
   DeleteCurrentUserDecorator,
-  DeleteUserByIdDecorator,
   GetAllUsersDecorator,
   GetCurrentUserDecorator,
   GetUserByEmailDecorator,
@@ -29,15 +28,17 @@ import {
 import { UpdateMeDto } from './dtos/update-me.dto';
 import { UsersQueryDto } from './dtos/user-query.dto';
 import { Serialize } from 'src/common/interceptors/serialize.interceptor';
-import { GetAllUserDto, PaginatedUserDto } from './dtos/paginated-users.dto';
+import { PaginatedUserDto } from './dtos/paginated-users.dto';
+import { UserDto } from './dtos/user.dto';
 
+@Serialize(User)
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @GetAllUsersDecorator()
-  @Serialize(GetAllUserDto)
+  @Serialize(UserDto)
   @Get()
   async findAllUsers(@Query() query: UsersQueryDto): Promise<PaginatedUserDto> {
     return await this.usersService.findAll(query);
@@ -45,7 +46,7 @@ export class UsersController {
 
   @GetCurrentUserDecorator()
   @Get('/me')
-  getMe(@CurrentUser() user: any): Promise<User> {
+  getMe(@CurrentUser() user: any): User {
     return user;
   }
 
@@ -67,7 +68,6 @@ export class UsersController {
   @BanUserDecorator()
   @Patch('/block/:userId')
   async banUser(@Param('userId') userId: string) {
-    console.log(userId);
     return await this.usersService.banUser(userId);
   }
 
@@ -94,13 +94,6 @@ export class UsersController {
     @Body() body: Partial<User>,
   ) {
     return await this.usersService.updateUserByAdmin(userId, body);
-  }
-
-  // this is actually a PATCH request that sets user.active = false
-  @DeleteUserByIdDecorator()
-  @Delete('/:userId')
-  async removeUser(@Param('userId') userId: string) {
-    return this.usersService.deactivate(userId);
   }
 
   @HardDeleteUserByIdDecorator()

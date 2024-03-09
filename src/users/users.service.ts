@@ -165,9 +165,6 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
 
-    // Additional logs for debugging
-    console.log('Banning user:', user);
-
     // Update the user's status and token version
     user.status = UserStatus.Blocked;
     user.tokenVersion += 1;

@@ -12,6 +12,7 @@ import {
   DeleteDateColumn,
 } from 'typeorm';
 import { RefreshToken } from '../../auth/entities/refresh-token.entity';
+import { Expose } from 'class-transformer';
 
 export enum UserStatus {
   Pending = 'pending',
@@ -30,9 +31,11 @@ export enum UserRoles {
 @Entity('users')
 @Index(['googleId', 'email', 'id'], { unique: true })
 export class User {
+  @Expose()
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Expose()
   @Column({ unique: true })
   email: string;
 
@@ -50,6 +53,7 @@ export class User {
   @Column({ nullable: true })
   password: string;
 
+  @Expose()
   @Column({
     nullable: false,
     type: 'enum',
@@ -58,6 +62,7 @@ export class User {
   })
   role: UserRoles;
 
+  @Expose()
   @Column({
     type: String,
     enum: UserStatus,

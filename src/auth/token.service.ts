@@ -50,7 +50,7 @@ export class TokenService {
     // Sign and return the access token with user information and expiration
     return this.jwtService.sign(payload, {
       secret: this.ACCESS_TOKEN_SECRET,
-      expiresIn: '15m',
+      expiresIn: '15d',
     });
   }
 
