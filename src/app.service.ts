@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { AppInfoDto } from './common/dto/app-info.dto';
+import { AppInfoDto } from './common/dtos/app-info.dto';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 

@@ -11,15 +11,15 @@ import {
   ApiUnauthorizedResponse,
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
-import { ChangePasswordDto } from '../dto/change-password.dto';
+import { ChangePasswordDto } from '../dtos/change-password.dto';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 import { commonErrorResponses } from 'src/common/constants';
-import { ForgotPasswordDto } from '../dto/forgot-password.dto';
-import { ResetPasswordDto } from '../dto/reset-password.dto';
-import { AuthenticatedResponseDto } from '../dto/auth-response.dto';
+import { ForgotPasswordDto } from '../dtos/forgot-password.dto';
+import { ResetPasswordDto } from '../dtos/reset-password.dto';
+import { AuthenticatedResponseDto } from '../dtos/auth-response.dto';
 import { LocalAuthGuard } from 'src/guards/local.guard';
-import { LoginUserDto } from '../dto/login-user.dto';
-import { RefreshTokenDto } from '../dto/refresh-token.dto';
+import { LoginUserDto } from '../dtos/login-user.dto';
+import { RefreshTokenDto } from '../dtos/refresh-token.dto';
 
 export function RegisterUsersDecorator() {
   return applyDecorators(

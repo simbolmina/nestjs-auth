@@ -6,7 +6,7 @@ import {
   TypeOrmHealthIndicator,
   HttpHealthIndicator,
 } from '@nestjs/terminus';
-import { AppInfoDto } from './common/dto/app-info.dto';
+import { AppInfoDto } from './common/dtos/app-info.dto';
 
 describe('AppController', () => {
   let appController: AppController;

@@ -6,8 +6,8 @@ import {
 } from '@nestjs/common';
 import * as crypto from 'crypto';
 import { UsersService } from '../users/users.service';
-import { ChangePasswordDto } from './dto/change-password.dto';
-import { AuthenticatedResponseDto } from './dto/auth-response.dto';
+import { ChangePasswordDto } from './dtos/change-password.dto';
+import { AuthenticatedResponseDto } from './dtos/auth-response.dto';
 import { TokenService } from './token.service';
 import { CryptoService } from './crypto.service';
 

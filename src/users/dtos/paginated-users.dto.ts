@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { MetaDto } from 'src/common/dto/meta.dto';
+import { MetaDto } from 'src/common/dtos/meta.dto';
 import { UserDto } from './user.dto';
 
 export class PaginatedUserDto {

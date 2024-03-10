@@ -8,7 +8,7 @@ import {
   NotFoundException,
   ForbiddenException,
 } from '@nestjs/common';
-import { ChangePasswordDto } from './dto/change-password.dto';
+import { ChangePasswordDto } from './dtos/change-password.dto';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UpdateUserDto } from '../users/dtos/update-user.dto';
 import { TokenService } from './token.service';

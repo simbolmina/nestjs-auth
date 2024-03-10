@@ -7,8 +7,8 @@ import {
   HttpHealthIndicator,
   TypeOrmHealthIndicator,
 } from '@nestjs/terminus';
-import { HealthCheckDto } from './common/dto/healt-check.dto';
-import { AppInfoDto } from './common/dto/app-info.dto';
+import { HealthCheckDto } from './common/dtos/healt-check.dto';
+import { AppInfoDto } from './common/dtos/app-info.dto';
 import { Cache } from 'cache-manager';
 import { CACHE_MANAGER, CacheInterceptor } from '@nestjs/cache-manager';
 
