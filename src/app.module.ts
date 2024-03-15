@@ -14,7 +14,7 @@ import { HttpModule } from '@nestjs/axios';
   imports: [
     ConfigModule.forRoot(),
     CacheModule.register({
-      ttl: 10000, // ttl in ms
+      ttl: 60000, // ttl in ms
       max: 1000,
       isGlobal: true,
     }),

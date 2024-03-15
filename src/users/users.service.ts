@@ -22,6 +22,8 @@ export type GoogleProfile = {
 
 @Injectable()
 export class UsersService {
+  private readonly userCachePrefix = 'user_'; // Prefix for user cache keys
+
   constructor(
     @InjectRepository(User) private repo: Repository<User>,
     @InjectRepository(RefreshToken)
@@ -95,7 +97,30 @@ export class UsersService {
 
   // Finds a single user by their unique identifier
   async findOneById(id: string): Promise<User | null> {
-    return await this.repo.findOneBy({ id });
+    const cacheKey = `${this.userCachePrefix}${id}`;
+    try {
+      // Attempt to retrieve the user from cache
+      const cachedItem: User | null = await this.cacheManager.get(cacheKey);
+      if (cachedItem) {
+        console.log(`Cache hit for user ID: ${id}`); // Logging cache hit
+        return cachedItem;
+      }
+      console.log(`Cache miss for user ID: ${id}`); // Logging cache miss
+
+      // Cache miss, retrieve the user from the database
+      const user = await this.repo.findOneBy({ id });
+      if (user) {
+        // Cache the user data for future requests, consider dynamic TTL based on context
+        await this.cacheManager.set(cacheKey, user, 10000);
+      }
+      return user;
+    } catch (error) {
+      console.error(
+        `Cache error for user ID: ${id}, falling back to database. Error: ${error}`,
+      );
+      // On cache error, fallback to database read
+      return await this.repo.findOneBy({ id });
+    }
   }
 
   // Finds a user by their Google ID
@@ -118,7 +143,14 @@ export class UsersService {
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    return await this.repo.save(user);
+    await this.repo.save(user);
+
+    // Invalidate the cache upon user update to ensure consistency
+    const cacheKey = `${this.userCachePrefix}${id}`;
+    await this.cacheManager.del(cacheKey);
+    console.log(`Cache invalidated for user ID: ${id}`); // Logging cache invalidation
+
+    return user;
   }
 
   // Allows admin to update a user's information
