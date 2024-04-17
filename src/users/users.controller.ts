@@ -8,6 +8,7 @@ import {
   Delete,
   NotFoundException,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CurrentUser } from './decorators/current-user.decorator';
@@ -30,6 +31,7 @@ import { UsersQueryDto } from './dtos/user-query.dto';
 import { Serialize } from 'src/common/interceptors/serialize.interceptor';
 import { PaginatedUserDto } from './dtos/paginated-users.dto';
 import { UserDto } from './dtos/user.dto';
+import { AuthGuard } from '@nestjs/passport';
 
 @Serialize(User)
 @ApiTags('users')
@@ -44,7 +46,8 @@ export class UsersController {
     return await this.usersService.findAll(query);
   }
 
-  @GetCurrentUserDecorator()
+  // @GetCurrentUserDecorator()
+  @UseGuards(AuthGuard('jwt'))
   @Get('/me')
   getMe(@CurrentUser() user: any): User {
     return user;

@@ -5,15 +5,12 @@ import {
   Logger,
   UnauthorizedException,
 } from '@nestjs/common';
-import * as crypto from 'crypto';
 import { UsersService } from '../users/users.service';
-import { ChangePasswordDto } from './dtos/change-password.dto';
-import { AuthenticatedResponseDto } from './dtos/auth-response.dto';
-import { TokenService } from './token.service';
 import { CryptoService } from './crypto.service';
 import { EmailService } from 'src/common/email.service';
 import { ValidateOtpDto } from './dtos/validate-otp.dto';
 import { JwtService } from '@nestjs/jwt';
+import { Resend2faOtpDto } from './dtos/resend-2fa-otp.dto';
 
 @Injectable()
 export class TwoFactorAuthenticationService {
@@ -21,7 +18,6 @@ export class TwoFactorAuthenticationService {
 
   constructor(
     private readonly usersService: UsersService,
-    private readonly tokenService: TokenService,
     private readonly cryptoService: CryptoService,
     private readonly emailService: EmailService,
     private readonly jwtService: JwtService,
@@ -103,5 +99,57 @@ export class TwoFactorAuthenticationService {
     });
 
     return { message: 'OTP has been resent.' };
+  }
+
+  async resend2faForLogin(
+    body: Resend2faOtpDto,
+  ): Promise<{ tempAuthToken: string; message: string }> {
+    const { tempAuthToken } = body;
+    let userId: string;
+
+    try {
+      const decoded = this.jwtService.verify(tempAuthToken); // Verify the existing temporary token
+      userId = decoded.userId;
+    } catch (error) {
+      throw new UnauthorizedException('Invalid or expired temporary token.');
+    }
+
+    const user = await this.usersService.findOneById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found.');
+    }
+
+    if (
+      !user.twoFactorAuthToken ||
+      new Date() > user.twoFactorAuthTokenExpiry
+    ) {
+      throw new BadRequestException(
+        'No ongoing 2FA process found or OTP has expired.',
+      );
+    }
+
+    // Generate and hash a new OTP
+    const [generatedOtp, hashedOtp] =
+      await this.cryptoService.generateAndHashOtp6Figures();
+
+    // Send the new OTP email
+    await this.emailService.sendOtpEmail(user.email, generatedOtp);
+
+    // Update the OTP and expiry time in the user's document
+    await this.usersService.updateCurrentUser(user.id, {
+      twoFactorAuthToken: hashedOtp,
+      twoFactorAuthTokenExpiry: new Date(Date.now() + 10 * 60 * 1000),
+    });
+
+    // Generate a new temporary authentication token
+    const newTempAuthToken = this.jwtService.sign(
+      { userId: user.id },
+      { expiresIn: '10m' },
+    );
+
+    return {
+      tempAuthToken: newTempAuthToken,
+      message: 'A new OTP has been sent to your email.',
+    };
   }
 }

@@ -40,7 +40,7 @@ export class User {
   email: string;
 
   @Column({ nullable: true })
-  googleId: string;
+  googleId: string | null;
 
   @Column({
     nullable: false,
@@ -102,6 +102,15 @@ export class User {
 
   @DeleteDateColumn()
   deletedAt: Date;
+
+  static fromPlain(plain: Partial<User>): User {
+    // console.log('plain', plain);
+    const user = new User();
+    // console.log('user', user);
+    Object.assign(user, plain);
+    // console.log('user', user);
+    return user;
+  }
 
   @AfterInsert()
   logInsert() {

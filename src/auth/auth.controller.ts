@@ -1,12 +1,4 @@
-import {
-  Body,
-  Controller,
-  HttpStatus,
-  Patch,
-  Post,
-  Res,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, HttpStatus, Patch, Post, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiTags } from '@nestjs/swagger';
 import { SignupUserDto } from './dtos/signup-user.dto';
@@ -17,12 +9,16 @@ import {
   ForgotPasswordDecorator,
   GoogleLoginDecorator,
   LoginUsersDecorator,
+  LoginWithTwoFactorDecorator,
   RefreshTokenDecorator,
   RegisterUsersDecorator,
+  ResendTwoFactorAuthDecorator,
+  ResendTwoFactorAuthForLoginDecorator,
   ResetPasswordDecorator,
+  SetupTwoFactorAuthDecorator,
+  VerifyTwoFactorAuthDecorator,
 } from './decorators';
 import { CurrentUser } from 'src/users/decorators/current-user.decorator';
-//import { User } from 'src/users/entities/user.entity';
 import { ChangePasswordDto } from './dtos/change-password.dto';
 import { ForgotPasswordDto } from './dtos/forgot-password.dto';
 import { PasswordService } from './password.service';
@@ -31,10 +27,10 @@ import { AuthenticatedResponseDto } from './dtos/auth-response.dto';
 import { TokenService } from './token.service';
 import { UsersService } from 'src/users/users.service';
 import { TwoFactorAuthenticationService } from './two-factor.service';
-import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 import { ValidateOtpDto } from './dtos/validate-otp.dto';
 import { Resend2faOtpDto } from './dtos/resend-2fa-otp.dto';
 import { LoginWithTwoFactorAuthenticationDto } from './dtos/login-with-2fa.dto';
+import { User } from '../users/entities/user.entity';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -59,9 +55,19 @@ export class AuthController {
     return await this.authService.login(user);
   }
 
+  @LoginWithTwoFactorDecorator()
   @Post('login-with-two-factor-authentication')
-  async loginWith2FA(@Body() body: LoginWithTwoFactorAuthenticationDto) {
-    return await this.authService.loginWithOtp(body);
+  async loginWith2FA(
+    @Body() body: LoginWithTwoFactorAuthenticationDto,
+    @CurrentUser() user: any,
+  ) {
+    return await this.authService.loginWithOtp(body, user);
+  }
+
+  @ResendTwoFactorAuthForLoginDecorator()
+  @Post('resend-two-factor-authentication-for-login')
+  async resend2faForLogin(@Body() body: Resend2faOtpDto) {
+    return await this.twoFactorAuthenticationService.resend2faForLogin(body);
   }
 
   @GoogleLoginDecorator()
@@ -114,13 +120,13 @@ export class AuthController {
     return await this.tokenService.refreshToken(body);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @SetupTwoFactorAuthDecorator()
   @Post('setup-two-factor-authentication')
   async setup2fa(@CurrentUser() user: any): Promise<{ message: string }> {
     return await this.twoFactorAuthenticationService.setup2FA(user);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @VerifyTwoFactorAuthDecorator()
   @Post('verify-two-factor-authentication')
   async verify2FA(
     @CurrentUser() user: any,
@@ -129,7 +135,7 @@ export class AuthController {
     return await this.twoFactorAuthenticationService.verify2FA(user, body);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @ResendTwoFactorAuthDecorator()
   @Post('resend-two-factor-authentication')
   async resend2faOtp(@CurrentUser() user: any): Promise<{ message: string }> {
     return this.twoFactorAuthenticationService.resend2faOtp(user.id);

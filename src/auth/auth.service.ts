@@ -127,24 +127,48 @@ export class AuthService {
     }
   }
 
+  // async loginWithOtp(
+  //   body: LoginWithTwoFactorAuthenticationDto,
+  // ): Promise<AuthenticatedResponseDto> {
+  //   // Decode tempAuthToken to get userId
+  //   const decoded = this.jwtService.verify(body.tempAuthToken);
+  //   const user = await this.usersService.findOneById(decoded.userId);
+
+  //   // Perform OTP verification
+  //   const isOtpValid = await this.cryptoService.validateOtp(
+  //     body.otp,
+  //     user.twoFactorAuthToken,
+  //   );
+
+  //   if (!isOtpValid) {
+  //     throw new UnauthorizedException('Invalid OTP. Please try again.');
+  //   }
+
+  //   // Generate the real access and refresh tokens upon successful OTP verification
+  //   const accessToken = await this.tokenService.createAccessToken(user);
+  //   const refreshToken = await this.tokenService.createRefreshToken(user);
+
+  //   return {
+  //     accessToken,
+  //     refreshToken,
+  //   };
+  // }
+
   async loginWithOtp(
     body: LoginWithTwoFactorAuthenticationDto,
+    user: any,
   ): Promise<AuthenticatedResponseDto> {
-    // Decode tempAuthToken to get userId
-    const decoded = this.jwtService.verify(body.tempAuthToken);
-    const user = await this.usersService.findOneById(decoded.userId);
-
-    // Perform OTP verification
     const isOtpValid = await this.cryptoService.validateOtp(
       body.otp,
       user.twoFactorAuthToken,
     );
 
     if (!isOtpValid) {
-      throw new UnauthorizedException('Invalid OTP. Please try again.');
+      throw new UnauthorizedException(
+        'Invalid Two Factor Autentication Code. Please try again.',
+      );
     }
 
-    // Generate the real access and refresh tokens upon successful OTP verification
     const accessToken = await this.tokenService.createAccessToken(user);
     const refreshToken = await this.tokenService.createRefreshToken(user);
 
