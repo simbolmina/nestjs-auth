@@ -9,10 +9,13 @@ import { TerminusModule } from '@nestjs/terminus';
 import { AuthModule } from './auth/auth.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { HttpModule } from '@nestjs/axios';
+import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     CacheModule.register({
       ttl: 60000, // ttl in ms
       max: 1000,
@@ -24,6 +27,7 @@ import { HttpModule } from '@nestjs/axios';
     TerminusModule,
     AuthModule,
     HttpModule,
+    CommonModule,
   ],
   controllers: [AppController],
   providers: [AppService],

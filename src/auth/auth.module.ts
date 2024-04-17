@@ -19,6 +19,8 @@ import { RefreshToken } from './entities/refresh-token.entity';
 import { RefreshTokenStrategy } from './strategies/refresh.strategy';
 import { ValidateLoginMiddleware } from './middlewares/validation.middleware';
 import { CryptoService } from './crypto.service';
+import { TwoFactorAuthenticationService } from './two-factor.service';
+import { CommonModule } from 'src/common/common.module';
 
 @Module({
   imports: [
@@ -28,12 +30,13 @@ import { CryptoService } from './crypto.service';
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
-        secret: configService.get('TOKEN_SECRET_KEY'),
+        secret: configService.get('ACCESS_TOKEN_SECRET'),
         signOptions: { expiresIn: '30d' },
       }),
       inject: [ConfigService],
     }),
     UsersModule,
+    CommonModule,
   ],
   controllers: [AuthController],
   providers: [
@@ -44,6 +47,7 @@ import { CryptoService } from './crypto.service';
     PasswordService,
     TokenService,
     CryptoService,
+    TwoFactorAuthenticationService,
   ],
 })
 export class AuthModule implements NestModule {

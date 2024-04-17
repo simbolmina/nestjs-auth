@@ -122,7 +122,7 @@ describe('AuthService', () => {
         JwtModule.registerAsync({
           imports: [ConfigModule],
           useFactory: async (configService: ConfigService) => ({
-            secret: configService.get('TOKEN_SECRET_KEY'),
+            secret: configService.get('ACCESS_TOKEN_SECRET'),
             signOptions: { expiresIn: '90d' },
           }),
           inject: [ConfigService],

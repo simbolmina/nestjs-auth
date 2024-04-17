@@ -8,6 +8,7 @@ import {
   IsNotEmpty,
   IsStrongPassword,
   IsDate,
+  IsBoolean,
 } from 'class-validator';
 import { UserRoles } from '../entities/user.entity';
 
@@ -39,6 +40,19 @@ export class UpdateUserDto {
   @IsOptional()
   @IsDate()
   passwordResetExpires: Date;
+
+  @IsNotEmpty()
+  @IsString()
+  @IsOptional()
+  twoFactorAuthToken: string;
+
+  @IsOptional()
+  @IsDate()
+  twoFactorAuthTokenExpiry: Date;
+
+  @IsOptional()
+  @IsBoolean()
+  isTwoFactorAuthEnabled: boolean;
 }
 
 export class AdminUpdateUserDto extends UpdateUserDto {

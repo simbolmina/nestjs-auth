@@ -20,4 +20,17 @@ export class CryptoService {
     const hash = (await scrypt(password, salt, 32)) as Buffer;
     return storedHash === hash.toString('hex');
   }
+
+  async generateAndHashOtp6Figures(): Promise<[string, string]> {
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const salt = randomBytes(8).toString('hex');
+    const hashedOtp = (await scrypt(otp, salt, 32)) as Buffer;
+    return [otp, `${salt}.${hashedOtp.toString('hex')}`];
+  }
+
+  async validateOtp(otp: string, storedOtp: string): Promise<boolean> {
+    const [salt, storedHash] = storedOtp.split('.');
+    const hash = (await scrypt(otp, salt, 32)) as Buffer;
+    return storedHash === hash.toString('hex');
+  }
 }

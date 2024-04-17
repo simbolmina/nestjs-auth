@@ -4,6 +4,7 @@ import {
   Injectable,
   Logger,
   NotFoundException,
+  UnauthorizedException,
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
@@ -12,6 +13,10 @@ import { User, UserStatus } from '../users/entities/user.entity';
 import { AccountInactiveException } from '../common/exceptions/account-inactive.exception';
 import { TokenService } from './token.service';
 import { CryptoService } from './crypto.service';
+import { TwoFactorAuthenticationService } from './two-factor.service';
+import { JwtService } from '@nestjs/jwt';
+import { AuthenticatedResponseDto } from './dtos/auth-response.dto';
+import { LoginWithTwoFactorAuthenticationDto } from './dtos/login-with-2fa.dto';
 
 // Initialize the OAuth2Client with the Google client ID from the environment variables.
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -24,6 +29,8 @@ export class AuthService {
     private readonly usersService: UsersService,
     private readonly tokenService: TokenService,
     private readonly cryptoService: CryptoService,
+    private readonly twoFactorAuthenticationService: TwoFactorAuthenticationService,
+    private readonly jwtService: JwtService,
   ) {}
 
   async register(email: string, password: string) {
@@ -80,17 +87,66 @@ export class AuthService {
       );
     }
 
-    // Generate and return access and refresh tokens for the active user
+    if (user.isTwoFactorAuthEnabled) {
+      this.logger.log(
+        JSON.stringify({
+          action: 'login-2fa-attempt',
+          userId: user.id,
+          method: 'email',
+        }),
+      );
+      const tempAuthToken = this.jwtService.sign(
+        { userId: user.id },
+        { expiresIn: '10m' },
+      );
+      const setupResult =
+        await this.twoFactorAuthenticationService.setup2FA(user);
+
+      return {
+        tempAuthToken: tempAuthToken,
+        message: setupResult.message,
+      };
+    } else {
+      // User does not have 2FA enabled, proceed with normal login
+      const accessToken = await this.tokenService.createAccessToken(user);
+      const refreshToken = await this.tokenService.createRefreshToken(user);
+
+      this.logger.log(
+        JSON.stringify({
+          action: 'login',
+          userId: user.id,
+          method: 'email',
+        }),
+      );
+
+      return {
+        accessToken,
+        refreshToken,
+        message: 'Login successful.',
+      };
+    }
+  }
+
+  async loginWithOtp(
+    body: LoginWithTwoFactorAuthenticationDto,
+  ): Promise<AuthenticatedResponseDto> {
+    // Decode tempAuthToken to get userId
+    const decoded = this.jwtService.verify(body.tempAuthToken);
+    const user = await this.usersService.findOneById(decoded.userId);
+
+    // Perform OTP verification
+    const isOtpValid = await this.cryptoService.validateOtp(
+      body.otp,
+      user.twoFactorAuthToken,
+    );
+
+    if (!isOtpValid) {
+      throw new UnauthorizedException('Invalid OTP. Please try again.');
+    }
+
+    // Generate the real access and refresh tokens upon successful OTP verification
     const accessToken = await this.tokenService.createAccessToken(user);
     const refreshToken = await this.tokenService.createRefreshToken(user);
-
-    this.logger.log(
-      JSON.stringify({
-        action: 'login',
-        userId: user.id,
-        method: 'email',
-      }),
-    );
 
     return {
       accessToken,

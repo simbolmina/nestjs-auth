@@ -78,6 +78,16 @@ export class User {
   @Column({ default: 0 })
   tokenVersion: number;
 
+  @Expose()
+  @Column({ default: false })
+  isTwoFactorAuthEnabled: boolean;
+
+  @Column({ nullable: true })
+  twoFactorAuthToken: string;
+
+  @Column({ nullable: true })
+  twoFactorAuthTokenExpiry: Date;
+
   @Column({ nullable: true })
   passwordResetCode: string;
 
