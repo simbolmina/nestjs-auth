@@ -64,8 +64,8 @@ export class AuthService {
     this.logger.log(
       JSON.stringify({
         action: 'register',
-        userId: user.id,
-        email: user.email,
+        userId: createdUser.id,
+        email: createdUser.email,
       }),
     );
     // Return the tokens
