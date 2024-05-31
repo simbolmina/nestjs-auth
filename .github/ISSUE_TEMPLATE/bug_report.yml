@@ -1,0 +1,57 @@
+name: Bug Report
+description: Report a bug in our application or services.
+title: "[Backend Bug]: "
+labels: ["backend", "bug"]
+assignees:
+  - backendteam
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        📡 Thank you for taking the time to fill out this bug report for our backend services. Please fill out the sections below to the best of your ability.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe the issue with the backend service, including what you expected to happen instead.
+      placeholder: Please describe the issue in detail, including expected and actual outcomes.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: Detail the steps taken to encounter the issue.
+      placeholder: 1. Make a request to endpoint '...' with payload '...' 2. Observe the unexpected response
+    validations:
+      required: true
+
+  - type: input
+    id: api-version
+    attributes:
+      label: API Version
+      description: Which version of the API are you using?
+      placeholder: e.g., v1, v2
+    validations:
+      required: true
+
+  - type: input
+    id: device-info
+    attributes:
+      label: Client Device Info
+      description: If applicable, include device model and OS version.
+      placeholder: e.g., iPhone 12, iOS 14.4 or Android device, Android 11
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Any additional information (e.g., network conditions, headers, etc.) that might help in diagnosing the issue.
+      placeholder: Include any other details that might be helpful.
+    validations:
+      required: false
