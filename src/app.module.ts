@@ -12,6 +12,8 @@ import { HttpModule } from '@nestjs/axios';
 import { CommonModule } from './common/common.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { RequestLoggingMiddleware } from './common/middlewares/logs.middleware';
+import { ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -33,7 +35,13 @@ import { RequestLoggingMiddleware } from './common/middlewares/logs.middleware';
     NotificationsModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

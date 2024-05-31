@@ -2,7 +2,7 @@
 
 This project is a showcase of a backend API developed using NestJS, demonstrating capabilities in user management, authentication, and both unit and end-to-end testing. It utilizes TypeORM with PostgreSQL for database interactions and includes comprehensive API documentation using Swagger.
 
-Codes are stripped out from a bigger app so there are some unnecessary codes in app here and there.
+Work in progress and not yet ready for production use. Just playing around with NestJS and TypeORM when I have time.
 
 ## Getting Started
 
