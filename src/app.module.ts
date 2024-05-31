@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
@@ -10,6 +10,8 @@ import { AuthModule } from './auth/auth.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { HttpModule } from '@nestjs/axios';
 import { CommonModule } from './common/common.module';
+import { NotificationsModule } from './notifications/notifications.module';
+import { RequestLoggingMiddleware } from './common/middlewares/logs.middleware';
 
 @Module({
   imports: [
@@ -28,8 +30,13 @@ import { CommonModule } from './common/common.module';
     AuthModule,
     HttpModule,
     CommonModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(RequestLoggingMiddleware).forRoutes('*');
+  }
+}

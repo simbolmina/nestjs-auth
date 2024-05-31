@@ -53,6 +53,10 @@ export class UpdateUserDto {
   @IsOptional()
   @IsBoolean()
   isTwoFactorAuthEnabled: boolean;
+
+  @IsOptional()
+  @IsString()
+  fcmToken: string;
 }
 
 export class AdminUpdateUserDto extends UpdateUserDto {

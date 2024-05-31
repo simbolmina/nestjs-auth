@@ -39,6 +39,10 @@ export class User {
   @Column({ unique: true })
   email: string;
 
+  @Expose()
+  @Column({ unique: true })
+  phoneNumber: string;
+
   @Column({ nullable: true })
   googleId: string | null;
 
@@ -78,6 +82,12 @@ export class User {
   @Column({ default: 0 })
   tokenVersion: number;
 
+  @Column({ default: false })
+  isEmailVerified: boolean;
+
+  @Column({ default: false })
+  isPhoneVerified: boolean;
+
   @Expose()
   @Column({ default: false })
   isTwoFactorAuthEnabled: boolean;
@@ -87,6 +97,18 @@ export class User {
 
   @Column({ nullable: true })
   twoFactorAuthTokenExpiry: Date;
+
+  @Column({ nullable: true })
+  verifyEmailToken: string;
+
+  @Column({ nullable: true })
+  verifyEmailExpires: Date;
+
+  @Column({ nullable: true })
+  verifyPhoneToken: string;
+
+  @Column({ nullable: true })
+  verifyPhoneExpires: Date;
 
   @Column({ nullable: true })
   passwordResetCode: string;

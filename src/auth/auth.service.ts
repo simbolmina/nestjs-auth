@@ -17,6 +17,9 @@ import { TwoFactorAuthenticationService } from './two-factor.service';
 import { JwtService } from '@nestjs/jwt';
 import { AuthenticatedResponseDto } from './dtos/auth-response.dto';
 import { LoginWithTwoFactorAuthenticationDto } from './dtos/login-with-2fa.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { RefreshToken } from './entities/refresh-token.entity';
+import { Repository } from 'typeorm';
 
 // Initialize the OAuth2Client with the Google client ID from the environment variables.
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -26,6 +29,8 @@ export class AuthService {
   private readonly logger = new Logger(AuthService.name);
 
   constructor(
+    @InjectRepository(RefreshToken)
+    private readonly refreshTokenRepo: Repository<RefreshToken>,
     private readonly usersService: UsersService,
     private readonly tokenService: TokenService,
     private readonly cryptoService: CryptoService,
@@ -246,5 +251,13 @@ export class AuthService {
 
     // Return the verified user
     return user;
+  }
+
+  async logout(user: User): Promise<{ message: string }> {
+    await this.usersService.updateCurrentUser(user.id, { fcmToken: null });
+    await this.refreshTokenRepo.remove(user.refreshTokens);
+    return {
+      message: 'Logout successful.',
+    };
   }
 }

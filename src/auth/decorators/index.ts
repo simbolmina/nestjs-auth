@@ -24,6 +24,7 @@ import { LoginWithTwoFactorAuthenticationDto } from '../dtos/login-with-2fa.dto'
 import { Resend2faOtpDto } from '../dtos/resend-2fa-otp.dto';
 import { ValidateOtpDto } from '../dtos/validate-otp.dto';
 import { TwoFactorAuthGuard } from 'src/guards/2FA.guard';
+import { RefreshTokenGuard } from 'src/guards/refresh.guard';
 
 export function RegisterUsersDecorator() {
   return applyDecorators(
@@ -59,6 +60,22 @@ export function LoginUsersDecorator() {
     ApiBadRequestResponse(commonErrorResponses.badRequest),
     ApiNotFoundResponse(commonErrorResponses.notFound),
     UseGuards(LocalAuthGuard),
+  );
+}
+
+export function LogoutUsersDecorator() {
+  return applyDecorators(
+    ApiOperation({
+      summary: 'User logout',
+      description:
+        'This endpoint deletes user fcm token for further notifications and refreshtokens when logged out, requires JWT',
+    }),
+    ApiOkResponse({
+      description: 'Returns success message',
+      type: String,
+    }),
+    UseGuards(JwtAuthGuard),
+    ApiBearerAuth(),
   );
 }
 
@@ -135,6 +152,7 @@ export function RefreshTokenDecorator() {
     }),
     ApiUnauthorizedResponse(commonErrorResponses.invalidKey),
     ApiBody({ type: RefreshTokenDto }),
+    UseGuards(RefreshTokenGuard),
   );
 }
 
@@ -171,6 +189,25 @@ export function ResendTwoFactorAuthForLoginDecorator() {
     ApiBadRequestResponse(commonErrorResponses.badRequest),
     ApiUnauthorizedResponse(commonErrorResponses.unAuthorized),
     ApiBody({ type: Resend2faOtpDto }),
+  );
+}
+
+export function LoginFromNewDeviceWithTwoFactorDecorator() {
+  return applyDecorators(
+    ApiOperation({
+      summary: 'Login from new device with Two-Factor Authentication',
+      description:
+        'This endpoint allows users with new device to login by providing their email and the OTP sent to their email. If the OTP matches and is valid, the user will be authenticated.',
+    }),
+    ApiOkResponse({
+      description: 'User is logged in successfully, returns access token',
+      type: AuthenticatedResponseDto,
+    }),
+    ApiBadRequestResponse(commonErrorResponses.badRequest),
+    ApiNotFoundResponse(commonErrorResponses.notFound),
+    ApiUnauthorizedResponse(commonErrorResponses.unAuthorized),
+    ApiBody({ type: LoginWithTwoFactorAuthenticationDto }),
+    // UseGuards(TwoFactorAuthGuard),
   );
 }
 
@@ -218,6 +255,111 @@ export function ResendTwoFactorAuthDecorator() {
     }),
     ApiBadRequestResponse(commonErrorResponses.badRequest),
     ApiUnauthorizedResponse(commonErrorResponses.unAuthorized),
+    UseGuards(JwtAuthGuard),
+  );
+}
+
+export function DisableTwoFactorAuthDecorator() {
+  return applyDecorators(
+    ApiOperation({
+      summary: 'Initiate Two-Factor Authentication Disabling',
+      description:
+        'This endpoint initiates the disabling of Two-Factor Authentication by requiring the user to verify their identity with an OTP.',
+    }),
+    ApiOkResponse({
+      description: '2FA disabling initiated, verify OTP to proceed',
+    }),
+    ApiBadRequestResponse(commonErrorResponses.badRequest),
+    ApiUnauthorizedResponse(commonErrorResponses.unAuthorized),
+    ApiBearerAuth(),
+    UseGuards(JwtAuthGuard),
+  );
+}
+
+export function VerifyTwoFactorAuthToDisableDecorator() {
+  return applyDecorators(
+    ApiOperation({
+      summary: 'Verify OTP to Disable Two-Factor Authentication',
+      description:
+        'This endpoint verifies the OTP provided by the user to disable Two-Factor Authentication. If the OTP is valid, 2FA will be disabled for the user.',
+    }),
+    ApiOkResponse({
+      description: '2FA has been disabled successfully',
+    }),
+    ApiBadRequestResponse(commonErrorResponses.badRequest),
+    ApiUnauthorizedResponse(commonErrorResponses.unAuthorized),
+    ApiBody({ type: ValidateOtpDto }),
+    ApiBearerAuth(),
+    UseGuards(JwtAuthGuard),
+  );
+}
+
+export function VerifyEmailSetupDecorator() {
+  return applyDecorators(
+    ApiOperation({
+      summary: 'Send OTP for Email Verification',
+      description:
+        "Sends an OTP to the user's registered email for verification purposes.",
+    }),
+    ApiOkResponse({
+      description: 'OTP sent successfully to the registered email address.',
+    }),
+    ApiBadRequestResponse(commonErrorResponses.badRequest),
+    ApiUnauthorizedResponse(commonErrorResponses.unAuthorized),
+    ApiBearerAuth(),
+    UseGuards(JwtAuthGuard),
+  );
+}
+
+export function ConfirmEmailSetupDecorator() {
+  return applyDecorators(
+    ApiOperation({
+      summary: 'Confirm Email Verification',
+      description:
+        "Confirms the email verification by validating the OTP sent to the user's email.",
+    }),
+    ApiOkResponse({
+      description: 'Email verification confirmed successfully.',
+    }),
+    ApiBadRequestResponse(commonErrorResponses.badRequest),
+    ApiUnauthorizedResponse(commonErrorResponses.unAuthorized),
+    ApiBody({ type: ValidateOtpDto }),
+    ApiBearerAuth(),
+    UseGuards(JwtAuthGuard),
+  );
+}
+
+export function VerifyPhoneSetupDecorator() {
+  return applyDecorators(
+    ApiOperation({
+      summary: 'Send OTP for Phone Verification',
+      description:
+        "Sends an OTP to the user's registered phone number for verification purposes.",
+    }),
+    ApiOkResponse({
+      description: 'OTP sent successfully to the registered phone number.',
+    }),
+    ApiBadRequestResponse(commonErrorResponses.badRequest),
+    ApiUnauthorizedResponse(commonErrorResponses.unAuthorized),
+    ApiBearerAuth(),
+    UseGuards(JwtAuthGuard),
+  );
+}
+
+export function ConfirmPhoneSetupDecorator() {
+  return applyDecorators(
+    ApiOperation({
+      summary: 'Confirm Phone Verification',
+      description:
+        "Confirms the phone verification by validating the OTP sent to the user's phone number.",
+    }),
+    ApiOkResponse({
+      description: 'Phone verification confirmed successfully.',
+    }),
+    ApiBadRequestResponse(commonErrorResponses.badRequest),
+    ApiUnauthorizedResponse(commonErrorResponses.unAuthorized),
+    ApiBody({ type: ValidateOtpDto }),
+    ApiBearerAuth(),
     UseGuards(JwtAuthGuard),
   );
 }

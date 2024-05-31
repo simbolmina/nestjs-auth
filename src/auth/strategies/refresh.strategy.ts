@@ -1,13 +1,10 @@
-import { ExtractJwt, Strategy } from 'passport-jwt';
-import {
-  ForbiddenException,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
+import { ExtractJwt, Strategy } from 'passport-jwt';
 import { Request } from 'express';
-import { TokenService } from '../token.service';
 import { ConfigService } from '@nestjs/config';
+import { UsersService } from 'src/users/users.service';
+import { TokenService } from '../token.service';
 
 @Injectable()
 export class RefreshTokenStrategy extends PassportStrategy(
@@ -15,30 +12,26 @@ export class RefreshTokenStrategy extends PassportStrategy(
   'refresh',
 ) {
   constructor(
+    private readonly usersService: UsersService,
     private readonly configService: ConfigService,
     private readonly tokenService: TokenService,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      ignoreExpiration: true,
-      // secretOrKey: 'some_secret_key',
-      secretOrKey: configService.get<string>('REFRESH_TOKEN_SECRET'),
+      secretOrKeyProvider: async (request, rawJwtToken, done) => {
+        const secret = configService.get<string>('REFRESH_TOKEN_SECRET');
+        done(null, secret);
+      },
       passReqToCallback: true,
     });
   }
 
-  async validate(req: Request, payload: any) {
-    const authorizationHeader = req.get('authorization');
-
-    if (!authorizationHeader) {
-      console.log('No authorization header found');
-      throw new UnauthorizedException('No authorization header found');
+  async validate(req: Request, payload: any): Promise<any> {
+    const refreshToken = req.headers.authorization?.split(' ')[1];
+    if (!refreshToken) {
+      throw new UnauthorizedException('Refresh token not found');
     }
 
-    const refreshToken = authorizationHeader.replace('Bearer ', '').trim();
-
-    await this.tokenService.validateToken(refreshToken);
-
-    return { ...payload, refreshToken };
+    return await this.tokenService.validateToken(refreshToken);
   }
 }

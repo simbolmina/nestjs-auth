@@ -7,10 +7,10 @@ import {
 } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { CryptoService } from './crypto.service';
-import { EmailService } from 'src/common/email.service';
 import { ValidateOtpDto } from './dtos/validate-otp.dto';
 import { JwtService } from '@nestjs/jwt';
 import { Resend2faOtpDto } from './dtos/resend-2fa-otp.dto';
+import { EmailService } from 'src/notifications/email.service';
 
 @Injectable()
 export class TwoFactorAuthenticationService {
@@ -37,12 +37,13 @@ export class TwoFactorAuthenticationService {
   async verify2FA(
     user: any,
     verify2FADto: ValidateOtpDto,
+    requiredValue: boolean,
   ): Promise<{ message: string }> {
     const { otp } = verify2FADto;
     const validatedUser = await this.getUserAndValidateOtp(user.email, otp);
 
-    await this.usersService.updateCurrentUser(validatedUser.id, {
-      isTwoFactorAuthEnabled: true,
+    await this.usersService.update(validatedUser.id, {
+      isTwoFactorAuthEnabled: requiredValue,
       twoFactorAuthToken: null,
       twoFactorAuthTokenExpiry: null,
     });

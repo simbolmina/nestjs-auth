@@ -165,6 +165,10 @@ export class UsersService {
     return await this.repo.save(user);
   }
 
+  async update(id: string, updateData: Partial<User>): Promise<any> {
+    return await this.repo.update(id, updateData);
+  }
+
   // Removes a user from the database
   async remove(id: string): Promise<User> {
     const user = await this.findOneById(id);

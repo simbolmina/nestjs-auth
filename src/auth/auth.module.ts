@@ -21,6 +21,8 @@ import { ValidateLoginMiddleware } from './middlewares/validation.middleware';
 import { CryptoService } from './crypto.service';
 import { TwoFactorAuthenticationService } from './two-factor.service';
 import { CommonModule } from 'src/common/common.module';
+import { NotificationsModule } from 'src/notifications/notifications.module';
+import { VerificationService } from './verification.service';
 
 @Module({
   imports: [
@@ -37,6 +39,7 @@ import { CommonModule } from 'src/common/common.module';
     }),
     UsersModule,
     CommonModule,
+    NotificationsModule,
   ],
   controllers: [AuthController],
   providers: [
@@ -48,6 +51,7 @@ import { CommonModule } from 'src/common/common.module';
     TokenService,
     CryptoService,
     TwoFactorAuthenticationService,
+    VerificationService,
   ],
 })
 export class AuthModule implements NestModule {
