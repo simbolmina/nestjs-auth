@@ -12,8 +12,9 @@ import { HttpModule } from '@nestjs/axios';
 import { CommonModule } from './common/common.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { RequestLoggingMiddleware } from './common/middlewares/logs.middleware';
-import { ThrottlerGuard } from '@nestjs/throttler';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
+import { APP_RATE_LIMIT, APP_RATE_TTL } from './common/constants';
 
 @Module({
   imports: [
@@ -25,6 +26,12 @@ import { APP_GUARD } from '@nestjs/core';
       max: 1000,
       isGlobal: true,
     }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: APP_RATE_TTL,
+        limit: APP_RATE_LIMIT,
+      },
+    ]),
     DatabaseModule,
     UsersModule,
     ValidationModule,

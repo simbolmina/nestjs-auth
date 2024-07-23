@@ -53,7 +53,6 @@ export function GetCurrentUserDecorator() {
       type: UserDto,
     }),
     ApiUnauthorizedResponse(commonErrorResponses.unAuthorized),
-    // Serialize(UserDto),
     UseGuards(JwtAuthGuard),
   );
 }

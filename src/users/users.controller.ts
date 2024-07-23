@@ -20,7 +20,6 @@ import {
   DeleteCurrentUserDecorator,
   GetAllUsersDecorator,
   GetCurrentUserDecorator,
-  GetUserByEmailDecorator,
   GetUserByIdDecorator,
   HardDeleteUserByIdDecorator,
   UpdateCurrentUserDecorator,
@@ -46,7 +45,7 @@ export class UsersController {
     return await this.usersService.findAll(query);
   }
 
-  // @GetCurrentUserDecorator()
+  @GetCurrentUserDecorator()
   @UseGuards(AuthGuard('jwt'))
   @Get('/me')
   getMe(@CurrentUser() user: any): User {
@@ -72,12 +71,6 @@ export class UsersController {
   @Patch('/block/:userId')
   async banUser(@Param('userId') userId: string) {
     return await this.usersService.banUser(userId);
-  }
-
-  @GetUserByEmailDecorator()
-  @Get('/email/:email')
-  async findUserByEmail(@Query('email') email: string) {
-    return await this.usersService.findByEmail(email);
   }
 
   @GetUserByIdDecorator()

@@ -27,10 +27,7 @@ async function bootstrap() {
     .setVersion('1.0')
     .addTag('users')
     .setContact('Bilal ARKAN', 'https://discord.gg/xxx', 'simbolmina@gmail.com')
-    .addBearerAuth(
-      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
-      'token',
-    )
+    .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }) //
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
