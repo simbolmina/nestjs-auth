@@ -7,6 +7,7 @@ import {
   HttpHealthIndicator,
 } from '@nestjs/terminus';
 import { AppInfoDto } from './common/dtos/app-info.dto';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 
 describe('AppController', () => {
   let appController: AppController;
@@ -20,6 +21,13 @@ describe('AppController', () => {
       controllers: [AppController],
       providers: [
         AppService,
+        {
+          provide: CACHE_MANAGER,
+          useValue: {
+            get: jest.fn(),
+            set: jest.fn(),
+          },
+        },
         {
           provide: HealthCheckService,
           useValue: {
@@ -56,16 +64,16 @@ describe('AppController', () => {
         description: 'This is ecommerce API built with NestJS',
         web: {
           version: '0.4.0',
-          lastUpdate: '2023-05-15',
+          lastUpdate: '2024-03-19',
         },
         mobile: {
           ios: {
             version: '0.2.0',
-            lastUpdate: '2023-05-15',
+            lastUpdate: '2024-03-19',
           },
           android: {
             version: '0.2.0',
-            lastUpdate: '2023-05-15',
+            lastUpdate: '2024-03-19',
           },
         },
       };

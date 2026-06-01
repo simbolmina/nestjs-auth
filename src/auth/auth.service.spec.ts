@@ -14,6 +14,9 @@ import { UpdateUserDto } from '../users/dtos/update-user.dto';
 import { TokenService } from './token.service';
 import { PasswordService } from './password.service';
 import { CryptoService } from './crypto.service';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { RefreshToken } from './entities/refresh-token.entity';
+import { TwoFactorAuthenticationService } from './two-factor.service';
 
 const mockVerifyIdToken = jest.fn();
 
@@ -35,6 +38,7 @@ describe('AuthService', () => {
   let tokenService: Partial<TokenService>;
   let passwordService: Partial<PasswordService>;
   let cryptoService: Partial<CryptoService>;
+  let twoFactorAuthenticationService: Partial<TwoFactorAuthenticationService>;
   let users: User[] = [];
 
   // Run this function before each test in the suite
@@ -115,6 +119,10 @@ describe('AuthService', () => {
       }),
     };
 
+    twoFactorAuthenticationService = {
+      setup2FA: jest.fn(),
+    };
+
     // Create a test module with JwtModule and the necessary AuthService and UsersService providers
     const module = await Test.createTestingModule({
       imports: [
@@ -139,10 +147,22 @@ describe('AuthService', () => {
           useValue: tokenService,
         },
         {
+          provide: getRepositoryToken(RefreshToken),
+          useValue: {
+            findOne: jest.fn(),
+            save: jest.fn(),
+            delete: jest.fn(),
+          },
+        },
+        {
           provide: PasswordService,
           useValue: passwordService,
         },
         { provide: CryptoService, useValue: cryptoService },
+        {
+          provide: TwoFactorAuthenticationService,
+          useValue: twoFactorAuthenticationService,
+        },
       ],
     }).compile(); // Compile the test module, which resolves the dependencies and creates an instance
 

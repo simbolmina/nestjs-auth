@@ -9,8 +9,11 @@ import { Repository } from 'typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
 import { UsersController } from '../users/users.controller';
-import { v4 as uuidv4 } from 'uuid';
-import { JwtStrategy } from './strategies/jwt.strategy';
+import { randomUUID } from 'crypto';
+import { PasswordService } from './password.service';
+import { TokenService } from './token.service';
+import { TwoFactorAuthenticationService } from './two-factor.service';
+import { VerificationService } from './verification.service';
 
 describe('AuthController', () => {
   let authController: AuthController;
@@ -22,9 +25,15 @@ describe('AuthController', () => {
   beforeEach(async () => {
     userService = {
       findAll: () => {
-        return Promise.resolve([
-          { id: '1', email: 'test@test.com', password: 'test' } as User,
-        ]);
+        return Promise.resolve({
+          data: [{ id: '1', email: 'test@test.com', password: 'test' } as User],
+          meta: {
+            page: 1,
+            pageSize: 10,
+            totalItems: 1,
+            totalPages: 1,
+          },
+        });
       },
       findOneById: (id: string) => {
         return Promise.resolve({
@@ -56,30 +65,21 @@ describe('AuthController', () => {
         } as User);
       },
       deactivate: (id: string) => {
-        return Promise.resolve({
-          id,
-          email: 'test@test.com',
-          password: 'test',
-          active: false,
-        } as User);
+        return Promise.resolve();
       },
     };
     fakeAuthService = {
-      // signup: () => {},
-      signin: (email: string, password: string) => {
+      login: (user: User) => {
         return Promise.resolve({
-          data: {
-            id: '1',
-            email,
-            password,
-          } as User,
-          token: 'token',
+          accessToken: 'access-token',
+          refreshToken: 'refresh-token',
+          message: 'Login successful.',
         });
       },
     };
     fakeUserRepository = {
       create: jest.fn().mockImplementation((user) => {
-        user.id = uuidv4();
+        user.id = randomUUID();
         user.gender = 'other';
         user.role = 'user';
         return user;
@@ -144,9 +144,24 @@ describe('AuthController', () => {
       ],
       controllers: [AuthController, UsersController],
       providers: [
-        JwtStrategy,
         { provide: UsersService, useValue: userService },
         { provide: AuthService, useValue: fakeAuthService },
+        {
+          provide: PasswordService,
+          useValue: {},
+        },
+        {
+          provide: TokenService,
+          useValue: {},
+        },
+        {
+          provide: TwoFactorAuthenticationService,
+          useValue: {},
+        },
+        {
+          provide: VerificationService,
+          useValue: {},
+        },
         {
           provide: JwtService,
           useValue: new JwtService({ secret: 'test-secret' }),

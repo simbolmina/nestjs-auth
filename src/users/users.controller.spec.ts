@@ -1,26 +1,28 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
-import { AuthService } from '../auth/auth.service';
-import { User } from './entities/user.entity';
+import { User, UserRoles } from './entities/user.entity';
 import { SerializeInterceptor } from '../common/interceptors/serialize.interceptor';
 import { NotFoundException } from '@nestjs/common';
 import { UserDto } from './dtos/user.dto';
-import { Response } from 'express';
-import { AuthController } from '../auth/auth.controller';
+import { SortOrder } from 'src/common/enums';
 
 describe('UsersController', () => {
   let usersController: UsersController;
-  let authController: AuthController;
   let userService: Partial<UsersService>;
-  let fakeAuthService: Partial<AuthService>;
 
   beforeEach(async () => {
     userService = {
       findAll: () => {
-        return Promise.resolve([
-          { id: '1', email: 'test@test.com', password: 'test' } as User,
-        ]);
+        return Promise.resolve({
+          data: [{ id: '1', email: 'test@test.com', password: 'test' } as User],
+          meta: {
+            page: 1,
+            pageSize: 10,
+            totalItems: 1,
+            totalPages: 1,
+          },
+        });
       },
       findOneById: (id: string) => {
         return Promise.resolve({
@@ -36,13 +38,13 @@ describe('UsersController', () => {
           password: 'password',
         } as User);
       },
-      remove: (id: string) => {
+      remove: jest.fn((id: string) => {
         return Promise.resolve({
           id,
           email: 'test@test.com',
           password: 'test',
         } as User);
-      },
+      }),
       updateCurrentUser: (id: string, attrs: Partial<User>) => {
         return Promise.resolve({
           id,
@@ -51,38 +53,17 @@ describe('UsersController', () => {
           ...attrs,
         } as User);
       },
-      deactivate: (id: string) => {
-        return Promise.resolve({
-          id,
-          email: 'test@test.com',
-          password: 'test',
-          active: false,
-        } as User);
-      },
-    };
-    fakeAuthService = {
-      // signup: () => {},
-      signin: (email: string, password: string) => {
-        return Promise.resolve({
-          data: {
-            id: '1',
-            email,
-            password,
-          } as User,
-          token: 'token',
-        });
-      },
+      deactivate: jest.fn((id: string) => {
+        return Promise.resolve();
+      }),
+      assignRole: jest.fn(() => Promise.resolve()),
     };
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [UsersController, AuthController],
+      controllers: [UsersController],
       providers: [
         {
           provide: UsersService,
           useValue: userService,
-        },
-        {
-          provide: AuthService,
-          useValue: fakeAuthService,
         },
         {
           provide: SerializeInterceptor,
@@ -92,7 +73,6 @@ describe('UsersController', () => {
     }).compile();
 
     usersController = module.get<UsersController>(UsersController);
-    authController = module.get<AuthController>(AuthController);
   });
 
   it('should be defined', () => {
@@ -112,57 +92,42 @@ describe('UsersController', () => {
   });
 
   it('findAllUsers returns all users', async () => {
-    await expect(usersController.findAllUsers()).resolves.toEqual([
-      { id: '1', email: 'test@test.com', password: 'test' } as User,
-    ]);
-  });
-
-  it('findUsersByEmail returns a list of users with given email', async () => {
-    const user = await usersController.findUserByEmail('test@test.com');
-    //expect(users).toEqual(1);
-    expect(user.email).toEqual('test@test.com');
-  });
-
-  // it('signin returns user and token', async () => {
-  //   const { data, token } = await controller.signin({
-  //     email: 'test@test.com',
-  //     password: 'test',
-  //   });
-  //   expect(data.id).toEqual('1');
-  //   expect(token).toBeDefined();
-  // });
-  it('signin returns user and token', async () => {
-    const mockResponse = {
-      cookie: jest.fn(),
-      status: function () {
-        return this;
+    await expect(
+      usersController.findAllUsers({
+        sortOrder: SortOrder.ASC,
+        page: 1,
+        limit: 10,
+      }),
+    ).resolves.toEqual({
+      data: [{ id: '1', email: 'test@test.com', password: 'test' } as User],
+      meta: {
+        page: 1,
+        pageSize: 10,
+        totalItems: 1,
+        totalPages: 1,
       },
-      json: function () {},
-    } as unknown as Response;
-
-    const { data, token } = await authController.signin(
-      { email: 'test@test.com', password: 'test' },
-      mockResponse,
-    );
-
-    expect(data.id).toEqual('1');
-    expect(token).toBeDefined();
-    expect(mockResponse.cookie).toHaveBeenCalledWith('auth_token', token, {
-      httpOnly: true,
-      maxAge: 72 * 60 * 60 * 1000,
     });
   });
 
-  it('removeUser deactivates user and returns user', async () => {
-    const user = await usersController.removeUser('1');
-    expect(user).toBeDefined();
-    expect(user.active).toEqual(false);
+  it('removeCurrentUser deactivates current user', async () => {
+    await usersController.removeCurrentUser({ id: '1' });
+    expect(userService.deactivate).toHaveBeenCalledWith('1');
   });
 
-  it('removeUser throws an error if user is not found', async () => {
-    userService.deactivate = () => Promise.reject(new NotFoundException());
-    await expect(usersController.removeUser('nonexistent')).rejects.toThrow(
+  it('deleteUser removes a user', async () => {
+    const user = await usersController.deleteUser('1');
+    expect(user).toBeDefined();
+  });
+
+  it('deleteUser throws an error if user is not found', async () => {
+    userService.remove = () => Promise.reject(new NotFoundException());
+    await expect(usersController.deleteUser('nonexistent')).rejects.toThrow(
       NotFoundException,
     );
+  });
+
+  it('assignRole delegates to users service', async () => {
+    await usersController.assignRole('1', UserRoles.Admin);
+    expect(userService.assignRole).toHaveBeenCalledWith('1', UserRoles.Admin);
   });
 });

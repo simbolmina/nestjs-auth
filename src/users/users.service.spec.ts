@@ -3,8 +3,12 @@ import { UsersService } from './users.service';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 import { NotFoundException } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { RefreshToken } from 'src/auth/entities/refresh-token.entity';
+import { UserRoles, UserStatus } from './entities/user.entity';
+import { SortOrder } from 'src/common/enums';
 
 describe('UsersService', () => {
   let usersService: UsersService;
@@ -19,7 +23,7 @@ describe('UsersService', () => {
   beforeEach(async () => {
     fakeUserRepository = {
       create: jest.fn().mockImplementation((user) => {
-        user.id = uuidv4();
+        user.id = randomUUID();
         user.gender = 'other';
         user.role = 'user';
         return user;
@@ -37,6 +41,16 @@ describe('UsersService', () => {
       find: jest.fn().mockImplementation(() => {
         return Promise.resolve(userArray);
       }),
+
+      createQueryBuilder: jest.fn().mockImplementation(() => ({
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest
+          .fn()
+          .mockImplementation(() => Promise.resolve([userArray, userArray.length])),
+      })),
 
       findOne: jest.fn().mockImplementation((options) => {
         const foundUser = userArray.find(
@@ -77,6 +91,20 @@ describe('UsersService', () => {
           provide: getRepositoryToken(User),
           useValue: fakeUserRepository,
         },
+        {
+          provide: getRepositoryToken(RefreshToken),
+          useValue: {
+            delete: jest.fn(),
+          },
+        },
+        {
+          provide: CACHE_MANAGER,
+          useValue: {
+            get: jest.fn(),
+            set: jest.fn(),
+            del: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
@@ -103,8 +131,12 @@ describe('UsersService', () => {
   });
 
   it('should find all users', async () => {
-    const users = await usersService.findAll();
-    expect(users.length).toBe(userArray.length);
+    const users = await usersService.findAll({
+      sortOrder: SortOrder.ASC,
+      page: 1,
+      limit: 10,
+    });
+    expect(users.data.length).toBe(userArray.length);
   });
 
   it('should find one user by id', async () => {
@@ -125,12 +157,12 @@ describe('UsersService', () => {
     const password = 'testpassword3';
     let user = await usersService.create(email, password);
 
-    const newGender = 'male';
+    const newEmail = 'updated@example.com';
     const updatedUser = await usersService.updateCurrentUser(user.id, {
-      gender: newGender,
+      email: newEmail,
     });
 
-    expect(updatedUser.gender).toBe(newGender);
+    expect(updatedUser.email).toBe(newEmail);
   });
 
   it('should update a user by admin (additional fields)', async () => {
@@ -139,19 +171,18 @@ describe('UsersService', () => {
     let user = await usersService.create(email, password);
 
     const newEmail = 'updated2@example.com';
-    const newRole = 'admin';
-    const newIsVIP = true;
+    const newRole = UserRoles.Admin;
+    const newTokenVersion = 1;
 
     const updatedUser = await usersService.updateUserByAdmin(user.id, {
       email: newEmail,
       role: newRole,
-      isVIP: newIsVIP,
+      tokenVersion: newTokenVersion,
     });
 
-    // Check that the email, role and isVIP were updated
     expect(updatedUser.email).toBe(newEmail);
     expect(updatedUser.role).toBe(newRole);
-    expect(updatedUser.isVIP).toBe(newIsVIP);
+    expect(updatedUser.tokenVersion).toBe(newTokenVersion);
   });
 
   it('should remove a user if it exists', async () => {
@@ -178,8 +209,10 @@ describe('UsersService', () => {
     const user = await usersService.create(email, password);
     console.log(user);
 
-    const deactivatedUser = await usersService.deactivate(user.id);
-    expect(deactivatedUser).toBeDefined();
+    await usersService.deactivate(user.id);
+    expect(fakeUserRepository.save).toHaveBeenCalledWith(
+      expect.objectContaining({ status: UserStatus.Inactive }),
+    );
   });
 });
 
